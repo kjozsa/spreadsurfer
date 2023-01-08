@@ -1,16 +1,17 @@
 import asyncio
 import datetime
+from asyncio import create_task
+from datetime import datetime
 
 import ccxt.pro as ccxt
-from loguru import logger
-from datetime import datetime
 from dateutil.relativedelta import relativedelta
+from loguru import logger
 
-exchange = ccxt.binance({'newUpdates': True})
+exchange = ccxt.binance({'newUpdates': True, 'enableRateLimit': True})
 
 
-# websocket
-async def scrape():
+# trades on websocket
+async def scrape_trades():
     while True:
         try:
             trades = await exchange.watch_trades('BTC/USDT')
@@ -21,7 +22,6 @@ async def scrape():
 
         except Exception as e:
             logger.warning(f'stopped at last_id {last_id}')
-            await exchange.close()
             raise e
 
 
@@ -37,10 +37,18 @@ async def timer():
 
 
 async def main():
-    timelogger = asyncio.create_task(timer())
-    scraper = asyncio.create_task(scrape())
-    await timelogger
-    await scraper
+    timelogger = create_task(timer())
+    trades = create_task(scrape_trades())
+
+    try:
+        await timelogger
+        await trades
+
+    finally:
+        await exchange.close()
 
 
-asyncio.run(main())
+try:
+    asyncio.run(main())
+except KeyboardInterrupt:
+    pass
