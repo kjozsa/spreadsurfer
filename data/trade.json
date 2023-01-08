@@ -1,0 +1,42 @@
+//{
+//  "e": "trade",     // Event type
+//  "E": 123456789,   // Event time
+//  "s": "BNBBTC",    // Symbol
+//  "t": 12345,       // Trade ID
+//  "p": "0.001",     // Price
+//  "q": "100",       // Quantity
+//  "b": 88,          // Buyer order ID
+//  "a": 50,          // Seller order ID
+//  "T": 123456785,   // Trade time
+//  "m": true,        // Is the buyer the market maker?
+//  "M": true         // Ignore
+//}
+// ['info', 'timestamp', 'datetime', 'symbol', 'id', 'order', 'type', 'side', 'takerOrMaker', 'price', 'amount', 'cost', 'fee', 'fees']
+{
+  "info": {
+    "e": "trade",
+    "E": 1673196766330,
+    "s": "BTCUSDT",
+    "t": 2442918045,
+    "p": "16941.12000000",
+    "q": "0.00080000",
+    "b": 17107804789,
+    "a": 17107804777,
+    "T": 1673196766329,
+    "m": false,
+    "M": true
+  },
+  "timestamp": 1673196766329,
+  "datetime": "2023-01-08T16:52:46.329Z",
+  "symbol": "BTC/USDT",
+  "id": "2442918045",
+  "order": null,
+  "type": null,
+  "side": "buy",
+  "takerOrMaker": null,
+  "price": 16941.12,
+  "amount": 0.0008,
+  "cost": 13.552896,
+  "fee": null,
+  "fees": []
+}
