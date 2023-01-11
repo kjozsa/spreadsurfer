@@ -20,6 +20,7 @@ exchange = ccxt.binance({
     'newUpdates': True,
     'enableRateLimit': True
 })
+logger.info('binance creds: {} / {}', config['binance']['apiKey'], config['binance']['secret'])
 
 
 def now():
@@ -29,27 +30,43 @@ def now():
 # trades on websocket
 @logger.catch()
 async def scrape_trades():
-    df = pd.DataFrame([{'ms': now() - relativedelta(days=1), 'price': 0}])
+    anywhere_in_the_past = now() - relativedelta(days=1)
+    wave = pd.DataFrame([{'ms': anywhere_in_the_past, 'price': 0, 'amount': 0}])
+    df = pd.DataFrame([{'ms': anywhere_in_the_past, 'nr_trades': 0, 'price': 0, 'amount': 0}])
+    last_trade_count = 0
+
     while True:
         try:
             trades = await exchange.watch_trades('BTC/USDT')
             fresh_data = []
             for trade in trades:
                 # logger.debug(f'{exchange.iso8601(exchange.milliseconds())}, {trade["symbol"]}, {trade["datetime"]}, {trade["price"]}, {trade["amount"]}')
-                fresh_data.append({'ms': dateparser.parse(trade['datetime']), 'price': trade['price']})
+                fresh_data.append({'ms': dateparser.parse(trade['datetime']), 'price': trade['price'], 'amount': trade['amount']})
+            frame = pd.DataFrame(fresh_data)
+            df = pd.concat([df, frame])
 
             # cut frame to latest X seconds
-            df = pd.concat([df, pd.DataFrame(fresh_data)])
             start = now() - relativedelta(microsecond=100 * 1000)
             df = df[df.ms >= start]
 
             # collect stats
-            nr_trades = len(df)
+            nr_trades = len(df)  # nr of trades in defined timewindow
             price_mean = df['price'].mean()
             price_min = df['price'].min()
             price_max = df['price'].max()
             spread = price_max - price_min
-            logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}')
+
+            # analyze wave start/end
+            if last_trade_count == 0 and nr_trades > 0:
+                logger.warning('starting new wave')
+
+            if nr_trades < last_trade_count:
+                logger.warning(f'ending wave')
+            last_trade_count = nr_trades
+
+            # wave = pd.concat([wave, frame])
+
+            logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {df["amount"].mean()}')
 
         except Exception as e:
             logger.exception('error scraping trades')
