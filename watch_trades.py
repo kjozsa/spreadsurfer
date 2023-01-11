@@ -11,6 +11,9 @@ from dateutil import parser as dateparser
 from dateutil.relativedelta import relativedelta
 from loguru import logger
 
+# logger.remove()
+# logger.add(sys.stdout, level="INFO")
+
 config = json.load(open('./config.json'))
 
 exchange = ccxt.binance({
@@ -74,7 +77,7 @@ async def scrape_trades():
             last_price = wave.tail(1)['price_mean'][0]
             logger.warning(f'ending wave, wave length was {wave_length_ms} ms')
             if wave_stabilized_at_price is not None:
-                logger.info(f'delta(end_price - last_stabilized) = {round(last_price - wave_stabilized_at_price, 4)}')
+                logger.error(f'delta(end_price - last_stabilized) = {round(last_price - wave_stabilized_at_price, 4)}')
             wave_stabilized = None
             wave_stabilized_at_frame = None
             wave_stabilized_at_price = None
@@ -91,7 +94,7 @@ async def scrape_trades():
         wave_min_length = 6  # TODO config
         wave_length_to_investigate = 4  # TODO config
         wave_stabilized_threshold = 0.01  # TODO config
-        wave_long_running_length = 8 # TODO config
+        wave_long_running_length = 8  # TODO config
         if wave_running and len(wave) > wave_min_length:
             last_frames = wave[-wave_length_to_investigate:]
             if len(last_frames) != wave_length_to_investigate: raise AssertionError
@@ -101,18 +104,18 @@ async def scrape_trades():
             if not wave_stabilized and not (wave_min_stabilized and wave_max_stabilized):
                 if wave_min_stabilized:
                     wave_stabilized = "min"
-                    logger.error('wave MIN stabilized in {} ms', timedelta_ms(now(), wave_start))
+                    logger.info('wave MIN stabilized in {} ms', timedelta_ms(now(), wave_start))
                     wave_stabilized_at_price = price_mean
                     wave_stabilized_at_frame = len(wave)
                 if wave_max_stabilized:
                     wave_stabilized = "max"
-                    logger.error('wave MAX stabilized in {} ms', timedelta_ms(now(), wave_start))
+                    logger.info('wave MAX stabilized in {} ms', timedelta_ms(now(), wave_start))
                     wave_stabilized_at_price = price_mean
                     wave_stabilized_at_frame = len(wave)
 
             if wave_stabilized and not wave_long_running:
                 if len(wave) - wave_stabilized_at_frame > wave_long_running_length:
-                    logger.error("LONG RUNNING WAVE! Attempting to restabilize..")
+                    logger.info("LONG RUNNING WAVE! Attempting to restabilize..")
                     wave_long_running = True
                     wave_stabilized = False
                     wave_min_stabilized = None
