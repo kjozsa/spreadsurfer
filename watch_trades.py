@@ -20,7 +20,6 @@ exchange = ccxt.binance({
     'newUpdates': True,
     'enableRateLimit': True
 })
-logger.info('binance creds: {} / {}', config['binance']['apiKey'], config['binance']['secret'])
 
 
 def now():
@@ -59,12 +58,13 @@ async def scrape_trades():
             # analyze wave start/end
             if last_trade_count == 0 and nr_trades > 0:
                 logger.warning('starting new wave')
+                wave = wave.head(0)
 
             if nr_trades < last_trade_count:
                 logger.warning(f'ending wave')
             last_trade_count = nr_trades
 
-            # wave = pd.concat([wave, frame])
+            wave = pd.concat([wave, frame])
 
             logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {df["amount"].mean()}')
 
