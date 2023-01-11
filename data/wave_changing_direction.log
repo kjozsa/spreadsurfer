@@ -1,0 +1,40 @@
+2023-01-11 18:55:23.255 | WARNING  | __main__:scrape_trades:67 - starting new wave
+2023-01-11 18:55:23.256 | DEBUG    | __main__:scrape_trades:88 - 1 trades, mean price: 17382.87, spread: 0.0, min: 17382.87, max: 17382.87, amount: 0.04662
+2023-01-11 18:55:23.337 | DEBUG    | __main__:scrape_trades:88 - 2 trades, mean price: 17382.665, spread: 0.4099999999998545, min: 17382.46, max: 17382.87, amount: 0.024565
+2023-01-11 18:55:23.390 | DEBUG    | __main__:scrape_trades:88 - 3 trades, mean price: 17382.733333333334, spread: 0.4099999999998545, min: 17382.46, max: 17382.87, amount: 0.01791
+2023-01-11 18:55:23.424 | DEBUG    | __main__:scrape_trades:88 - 4 trades, mean price: 17382.767499999998, spread: 0.4099999999998545, min: 17382.46, max: 17382.87, amount: 0.0151725
+2023-01-11 18:55:23.428 | DEBUG    | __main__:scrape_trades:88 - 6 trades, mean price: 17382.671666666665, spread: 0.41999999999825377, min: 17382.45, max: 17382.87, amount: 0.016843333333333335
+2023-01-11 18:55:23.474 | DEBUG    | __main__:scrape_trades:88 - 7 trades, mean price: 17382.641428571427, spread: 0.41999999999825377, min: 17382.45, max: 17382.87, amount: 0.015865714285714285
+2023-01-11 18:55:23.532 | DEBUG    | __main__:scrape_trades:88 - 8 trades, mean price: 17382.6325, spread: 0.41999999999825377, min: 17382.45, max: 17382.87, amount: 0.0146325
+2023-01-11 18:55:23.537 | DEBUG    | __main__:scrape_trades:88 - 9 trades, mean price: 17382.625555555554, spread: 0.41999999999825377, min: 17382.45, max: 17382.87, amount: 0.013014444444444445
+2023-01-11 18:55:23.575 | DEBUG    | __main__:scrape_trades:88 - 11 trades, mean price: 17382.647272727274, spread: 0.41999999999825377, min: 17382.45, max: 17382.87, amount: 0.012120909090909092
+2023-01-11 18:55:23.579 | DEBUG    | __main__:scrape_trades:88 - 12 trades, mean price: 17382.662500000002, spread: 0.41999999999825377, min: 17382.45, max: 17382.87, amount: 0.015359166666666667
+2023-01-11 18:55:23.642 | DEBUG    | __main__:scrape_trades:88 - 13 trades, mean price: 17382.645384615385, spread: 0.43000000000029104, min: 17382.44, max: 17382.87, amount: 0.014523846153846155
+2023-01-11 18:55:23.655 | DEBUG    | __main__:scrape_trades:88 - 14 trades, mean price: 17382.630714285715, spread: 0.43000000000029104, min: 17382.44, max: 17382.87, amount: 0.01462
+2023-01-11 18:55:23.658 | DEBUG    | __main__:scrape_trades:88 - 15 trades, mean price: 17382.617333333335, spread: 0.4399999999986903, min: 17382.43, max: 17382.87, amount: 0.015388
+2023-01-11 18:55:23.658 | ERROR    | __main__:scrape_trades:109 - wave MAX stabilized in 402 ms
+2023-01-11 18:55:23.660 | DEBUG    | __main__:scrape_trades:88 - 16 trades, mean price: 17382.605624999997, spread: 0.4399999999986903, min: 17382.43, max: 17382.87, amount: 0.015114375
+2023-01-11 18:55:23.662 | DEBUG    | __main__:scrape_trades:88 - 17 trades, mean price: 17382.592941176466, spread: 0.47999999999956344, min: 17382.39, max: 17382.87, amount: 0.014872941176470589
+2023-01-11 18:55:23.663 | DEBUG    | __main__:scrape_trades:88 - 18 trades, mean price: 17382.581666666665, spread: 0.47999999999956344, min: 17382.39, max: 17382.87, amount: 0.014658333333333336
+2023-01-11 18:55:23.665 | DEBUG    | __main__:scrape_trades:88 - 19 trades, mean price: 17382.57157894737, spread: 0.47999999999956344, min: 17382.39, max: 17382.87, amount: 0.014466315789473687
+2023-01-11 18:55:23.667 | DEBUG    | __main__:scrape_trades:88 - 20 trades, mean price: 17382.5625, spread: 0.47999999999956344, min: 17382.39, max: 17382.87, amount: 0.014293500000000004
+2023-01-11 18:55:23.669 | DEBUG    | __main__:scrape_trades:88 - 21 trades, mean price: 17382.553333333333, spread: 0.5, min: 17382.37, max: 17382.87, amount: 0.013810952380952384
+2023-01-11 18:55:23.671 | DEBUG    | __main__:scrape_trades:88 - 22 trades, mean price: 17382.544545454544, spread: 0.5099999999983993, min: 17382.36, max: 17382.87, amount: 0.01344136363636364
+2023-01-11 18:55:23.672 | DEBUG    | __main__:scrape_trades:88 - 23 trades, mean price: 17382.53608695652, spread: 0.5200000000004366, min: 17382.35, max: 17382.87, amount: 0.01328739130434783
+2023-01-11 18:55:23.674 | DEBUG    | __main__:scrape_trades:88 - 24 trades, mean price: 17382.528333333332, spread: 0.5200000000004366, min: 17382.35, max: 17382.87, amount: 0.013129583333333333
+2023-01-11 18:55:23.674 | ERROR    | __main__:scrape_trades:115 - LONG RUNNING WAVE! Attempting to restabilize..
+2023-01-11 18:55:23.676 | DEBUG    | __main__:scrape_trades:88 - 25 trades, mean price: 17382.521199999996, spread: 0.5200000000004366, min: 17382.35, max: 17382.87, amount: 0.0141124
+2023-01-11 18:55:23.708 | DEBUG    | __main__:scrape_trades:88 - 26 trades, mean price: 17382.514999999996, spread: 0.5200000000004366, min: 17382.35, max: 17382.87, amount: 0.013961538461538461
+2023-01-11 18:55:23.923 | DEBUG    | __main__:scrape_trades:88 - 28 trades, mean price: 17382.539999999997, spread: 0.5200000000004366, min: 17382.35, max: 17382.87, amount: 0.013175714285714287
+2023-01-11 18:55:23.927 | DEBUG    | __main__:scrape_trades:88 - 34 trades, mean price: 17382.610294117643, spread: 0.6200000000026193, min: 17382.35, max: 17382.97, amount: 0.026508235294117645
+2023-01-11 18:55:23.927 | ERROR    | __main__:scrape_trades:104 - wave MIN stabilized in 671 ms
+2023-01-11 18:55:23.929 | DEBUG    | __main__:scrape_trades:88 - 35 trades, mean price: 17382.621428571427, spread: 0.6500000000014552, min: 17382.35, max: 17383.0, amount: 0.031313714285714285
+2023-01-11 18:55:23.931 | DEBUG    | __main__:scrape_trades:88 - 36 trades, mean price: 17382.63222222222, spread: 0.6599999999998545, min: 17382.35, max: 17383.01, amount: 0.035999444444444445
+2023-01-11 18:55:23.932 | DEBUG    | __main__:scrape_trades:88 - 37 trades, mean price: 17382.642702702702, spread: 0.6700000000018917, min: 17382.35, max: 17383.02, amount: 0.036648108108108104
+2023-01-11 18:55:23.934 | DEBUG    | __main__:scrape_trades:88 - 39 trades, mean price: 17382.663589743588, spread: 0.7100000000027649, min: 17382.35, max: 17383.06, amount: 0.035912820512820506
+2023-01-11 18:55:23.936 | DEBUG    | __main__:scrape_trades:88 - 40 trades, mean price: 17382.6685, spread: 0.7100000000027649, min: 17382.35, max: 17383.06, amount: 0.03514
+2023-01-11 18:55:23.938 | DEBUG    | __main__:scrape_trades:88 - 41 trades, mean price: 17382.67317073171, spread: 0.7100000000027649, min: 17382.35, max: 17383.06, amount: 0.03429780487804878
+2023-01-11 18:55:23.948 | DEBUG    | __main__:scrape_trades:88 - 42 trades, mean price: 17382.67761904762, spread: 0.7100000000027649, min: 17382.35, max: 17383.06, amount: 0.03360023809523809
+2023-01-11 18:55:23.955 | DEBUG    | __main__:scrape_trades:88 - 43 trades, mean price: 17382.681860465116, spread: 0.7100000000027649, min: 17382.35, max: 17383.06, amount: 0.03283302325581395
+2023-01-11 18:55:24.022 | WARNING  | __main__:scrape_trades:75 - ending wave, wave length was 766 ms
+2023-01-11 18:55:24.022 | INFO     | __main__:scrape_trades:77 - delta(end-stabilized) = 0.0716

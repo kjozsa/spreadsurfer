@@ -74,7 +74,7 @@ async def scrape_trades():
             last_price = wave.tail(1)['price_mean'][0]
             logger.warning(f'ending wave, wave length was {wave_length_ms} ms')
             if wave_stabilized_at_price is not None:
-                logger.info(f'delta(end-stabilized) = {round(last_price - wave_stabilized_at_price, 4)}')
+                logger.info(f'delta(end_price - last_stabilized) = {round(last_price - wave_stabilized_at_price, 4)}')
             wave_stabilized = None
             wave_stabilized_at_frame = None
             wave_stabilized_at_price = None
