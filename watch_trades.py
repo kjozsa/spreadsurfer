@@ -1,15 +1,15 @@
-from datetime import timezone
 import asyncio
 import datetime
+import json
 from asyncio import create_task
 from datetime import datetime
+from datetime import timezone
 
 import ccxt.pro as ccxt
 import pandas as pd
+from dateutil import parser as dateparser
 from dateutil.relativedelta import relativedelta
 from loguru import logger
-from dateutil import parser as dateparser
-import json
 
 config = json.load(open('./config.json'))
 print(config)
@@ -30,50 +30,49 @@ def now():
 @logger.catch()
 async def scrape_trades():
     anywhere_in_the_past = now() - relativedelta(days=1)
+    wave_start = anywhere_in_the_past
     wave = pd.DataFrame([{'ms': anywhere_in_the_past, 'price': 0, 'amount': 0}])
     df = pd.DataFrame([{'ms': anywhere_in_the_past, 'nr_trades': 0, 'price': 0, 'amount': 0}])
     last_trade_count = 0
 
     while True:
-        try:
-            trades = await exchange.watch_trades('BTC/USDT')
-            fresh_data = []
-            for trade in trades:
-                # logger.debug(f'{exchange.iso8601(exchange.milliseconds())}, {trade["symbol"]}, {trade["datetime"]}, {trade["price"]}, {trade["amount"]}')
-                fresh_data.append({'ms': dateparser.parse(trade['datetime']), 'price': trade['price'], 'amount': trade['amount']})
-            frame = pd.DataFrame(fresh_data)
-            df = pd.concat([df, frame])
+        trades = await exchange.watch_trades('BTC/USDT')
+        fresh_data = []
+        for trade in trades:
+            # logger.debug(f'{exchange.iso8601(exchange.milliseconds())}, {trade["symbol"]}, {trade["datetime"]}, {trade["price"]}, {trade["amount"]}')
+            fresh_data.append({'ms': dateparser.parse(trade['datetime']), 'price': trade['price'], 'amount': trade['amount']})
+        frame = pd.DataFrame(fresh_data)
+        df = pd.concat([df, frame])
 
-            # cut frame to latest X seconds
-            start = now() - relativedelta(microsecond=100 * 1000)
-            df = df[df.ms >= start]
+        # cut frame to latest X seconds
+        start = now() - relativedelta(microsecond=100 * 1000)
+        df = df[df.ms >= start]
 
-            # collect stats
-            nr_trades = len(df)  # nr of trades in defined timewindow
-            price_mean = df['price'].mean()
-            price_min = df['price'].min()
-            price_max = df['price'].max()
-            spread = price_max - price_min
+        # collect stats
+        nr_trades = len(df)  # nr of trades in defined timewindow
+        price_mean = df['price'].mean()
+        price_min = df['price'].min()
+        price_max = df['price'].max()
+        spread = price_max - price_min
 
-            # analyze wave start/end
-            if last_trade_count == 0 and nr_trades > 0:
-                logger.warning('starting new wave')
-                wave = wave.head(0)
+        # analyze wave start/end, collect wave data
+        if last_trade_count == 0 and nr_trades > 0:
+            logger.warning('starting new wave')
+            wave = wave.head(0)
+            wave_start = now()
 
-            if nr_trades < last_trade_count:
-                logger.warning(f'ending wave')
-            last_trade_count = nr_trades
+        if nr_trades < last_trade_count:
+            wave_length_ms = round((now() - wave_start).total_seconds() * 1000)
+            logger.warning(f'ending wave, wave length was {wave_length_ms} ms')
+        last_trade_count = nr_trades
 
-            wave = pd.concat([wave, frame])
+        wave = pd.concat([wave, frame])
 
-            logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {df["amount"].mean()}')
-
-        except Exception as e:
-            logger.exception('error scraping trades')
-            raise e
+        logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {df["amount"].mean()}')
 
 
 # orders on websocket
+@logger.catch()
 async def scrape_order_book():
     while True:
         try:
@@ -85,6 +84,7 @@ async def scrape_order_book():
 
 
 # time logger
+@logger.catch()
 async def timer():
     start = datetime.now()
     logger.info(f'## starting at {start}')
