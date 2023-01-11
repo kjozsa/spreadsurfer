@@ -1,0 +1,854 @@
+{
+  "sapi": {
+    "get": {
+      "system/status": 0.1,
+      "accountSnapshot": 240,
+      "margin/asset": 1,
+      "margin/pair": 1,
+      "margin/allAssets": 0.1,
+      "margin/allPairs": 0.1,
+      "margin/priceIndex": 1,
+      "asset/assetDividend": 1,
+      "asset/dribblet": 0.1,
+      "asset/transfer": 0.1,
+      "asset/assetDetail": 0.1,
+      "asset/tradeFee": 0.1,
+      "asset/ledger-transfer/cloud-mining/queryByPage": 4,
+      "margin/loan": 1,
+      "margin/repay": 1,
+      "margin/account": 1,
+      "margin/transfer": 0.1,
+      "margin/interestHistory": 0.1,
+      "margin/forceLiquidationRec": 0.1,
+      "margin/order": 1,
+      "margin/openOrders": 1,
+      "margin/allOrders": 20,
+      "margin/myTrades": 1,
+      "margin/maxBorrowable": 5,
+      "margin/maxTransferable": 5,
+      "margin/tradeCoeff": 1,
+      "margin/isolated/transfer": 0.1,
+      "margin/isolated/account": 1,
+      "margin/isolated/pair": 1,
+      "margin/isolated/allPairs": 1,
+      "margin/isolated/accountLimit": 0.1,
+      "margin/interestRateHistory": 0.1,
+      "margin/orderList": 1,
+      "margin/allOrderList": 20,
+      "margin/openOrderList": 1,
+      "margin/crossMarginData": {
+        "cost": 0.1,
+        "noCoin": 0.5
+      },
+      "margin/isolatedMarginData": {
+        "cost": 0.1,
+        "noCoin": 1
+      },
+      "margin/isolatedMarginTier": 0.1,
+      "margin/rateLimit/order": 2,
+      "margin/dribblet": 0.1,
+      "loan/income": 40,
+      "loan/ongoing/orders": 40,
+      "loan/ltv/adjustment/history": 40,
+      "loan/borrow/history": 40,
+      "loan/repay/history": 40,
+      "loan/loanable/data": 40,
+      "loan/collateral/data": 40,
+      "loan/repay/collateral/rate": 600,
+      "loan/vip/ongoing/orders": 40,
+      "loan/vip/repay/history": 40,
+      "loan/vip/collateral/account": 600,
+      "fiat/orders": 600.03,
+      "fiat/payments": 0.1,
+      "futures/transfer": 1,
+      "futures/loan/borrow/history": 1,
+      "futures/loan/repay/history": 1,
+      "futures/loan/wallet": 1,
+      "futures/loan/adjustCollateral/history": 1,
+      "futures/loan/liquidationHistory": 1,
+      "rebate/taxQuery": 20.001,
+      "capital/config/getall": 1,
+      "capital/deposit/address": 1,
+      "capital/deposit/hisrec": 0.1,
+      "capital/deposit/subAddress": 0.1,
+      "capital/deposit/subHisrec": 0.1,
+      "capital/withdraw/history": 0.1,
+      "capital/contract/convertible-coins": 4.0002,
+      "convert/tradeFlow": 0.6667,
+      "convert/exchangeInfo": 50,
+      "convert/assetInfo": 10,
+      "convert/orderStatus": 0.6667,
+      "account/status": 0.1,
+      "account/apiTradingStatus": 0.1,
+      "account/apiRestrictions/ipRestriction": 0.1,
+      "bnbBurn": 0.1,
+      "sub-account/futures/account": 1,
+      "sub-account/futures/accountSummary": 0.1,
+      "sub-account/futures/positionRisk": 1,
+      "sub-account/futures/internalTransfer": 0.1,
+      "sub-account/list": 0.1,
+      "sub-account/margin/account": 1,
+      "sub-account/margin/accountSummary": 1,
+      "sub-account/spotSummary": 0.1,
+      "sub-account/status": 1,
+      "sub-account/sub/transfer/history": 0.1,
+      "sub-account/transfer/subUserHistory": 0.1,
+      "sub-account/universalTransfer": 0.1,
+      "sub-account/apiRestrictions/ipRestriction/thirdPartyList": 1,
+      "managed-subaccount/asset": 0.1,
+      "managed-subaccount/accountSnapshot": 240,
+      "managed-subaccount/queryTransLogForInvestor": 0.1,
+      "managed-subaccount/queryTransLogForTradeParent": 0.1,
+      "lending/daily/product/list": 0.1,
+      "lending/daily/userLeftQuota": 0.1,
+      "lending/daily/userRedemptionQuota": 0.1,
+      "lending/daily/token/position": 0.1,
+      "lending/union/account": 0.1,
+      "lending/union/purchaseRecord": 0.1,
+      "lending/union/redemptionRecord": 0.1,
+      "lending/union/interestHistory": 0.1,
+      "lending/project/list": 0.1,
+      "lending/project/position/list": 0.1,
+      "mining/pub/algoList": 0.1,
+      "mining/pub/coinList": 0.1,
+      "mining/worker/detail": 0.5,
+      "mining/worker/list": 0.5,
+      "mining/payment/list": 0.5,
+      "mining/statistics/user/status": 0.5,
+      "mining/statistics/user/list": 0.5,
+      "mining/payment/uid": 0.5,
+      "bswap/pools": 0.1,
+      "bswap/liquidity": {
+        "cost": 0.1,
+        "noPoolId": 1
+      },
+      "bswap/liquidityOps": 20.001,
+      "bswap/quote": 1.00005,
+      "bswap/swap": 20.001,
+      "bswap/poolConfigure": 1.00005,
+      "bswap/addLiquidityPreview": 1.00005,
+      "bswap/removeLiquidityPreview": 1.00005,
+      "bswap/unclaimedRewards": 6.667,
+      "bswap/claimedHistory": 6.667,
+      "blvt/tokenInfo": 0.1,
+      "blvt/subscribe/record": 0.1,
+      "blvt/redeem/record": 0.1,
+      "blvt/userLimit": 0.1,
+      "apiReferral/ifNewUser": 1,
+      "apiReferral/customization": 1,
+      "apiReferral/userCustomization": 1,
+      "apiReferral/rebate/recentRecord": 1,
+      "apiReferral/rebate/historicalRecord": 1,
+      "apiReferral/kickback/recentRecord": 1,
+      "apiReferral/kickback/historicalRecord": 1,
+      "broker/subAccountApi": 1,
+      "broker/subAccount": 1,
+      "broker/subAccountApi/commission/futures": 1,
+      "broker/subAccountApi/commission/coinFutures": 1,
+      "broker/info": 1,
+      "broker/transfer": 1,
+      "broker/transfer/futures": 1,
+      "broker/rebate/recentRecord": 1,
+      "broker/rebate/historicalRecord": 1,
+      "broker/subAccount/bnbBurn/status": 1,
+      "broker/subAccount/depositHist": 1,
+      "broker/subAccount/spotSummary": 1,
+      "broker/subAccount/marginSummary": 1,
+      "broker/subAccount/futuresSummary": 1,
+      "broker/rebate/futures/recentRecord": 1,
+      "broker/subAccountApi/ipRestriction": 1,
+      "broker/universalTransfer": 1,
+      "account/apiRestrictions": 0.1,
+      "c2c/orderMatch/listUserOrderHistory": 0.1,
+      "nft/history/transactions": 20.001,
+      "nft/history/deposit": 20.001,
+      "nft/history/withdraw": 20.001,
+      "nft/user/getAsset": 20.001,
+      "pay/transactions": 20.001,
+      "giftcard/verify": 0.1,
+      "giftcard/cryptography/rsa-public-key": 0.1,
+      "giftcard/buyCode/token-limit": 0.1,
+      "algo/futures/openOrders": 0.1,
+      "algo/futures/historicalOrders": 0.1,
+      "algo/futures/subOrders": 0.1,
+      "portfolio/account": 0.1,
+      "portfolio/collateralRate": 5,
+      "portfolio/pmLoan": 3.3335,
+      "staking/productList": 0.1,
+      "staking/position": 0.1,
+      "staking/stakingRecord": 0.1,
+      "staking/personalLeftQuota": 0.1
+    },
+    "post": {
+      "asset/dust": 1,
+      "asset/dust-btc": 0.1,
+      "asset/transfer": 0.1,
+      "asset/get-funding-asset": 0.1,
+      "asset/convert-transfer": 0.033335,
+      "asset/convert-transfer/queryByPage": 0.033335,
+      "account/disableFastWithdrawSwitch": 0.1,
+      "account/enableFastWithdrawSwitch": 0.1,
+      "capital/withdraw/apply": 4.0002,
+      "capital/contract/convertible-coins": 4.0002,
+      "margin/transfer": 1,
+      "margin/loan": 20.001,
+      "margin/repay": 20.001,
+      "margin/order": 0.040002,
+      "margin/order/oco": 0.040002,
+      "margin/isolated/transfer": 4.0002,
+      "margin/isolated/account": 2.0001,
+      "bnbBurn": 0.1,
+      "sub-account/virtualSubAccount": 0.1,
+      "sub-account/margin/transfer": 4.0002,
+      "sub-account/margin/enable": 0.1,
+      "sub-account/futures/enable": 0.1,
+      "sub-account/futures/transfer": 0.1,
+      "sub-account/futures/internalTransfer": 0.1,
+      "sub-account/transfer/subToSub": 0.1,
+      "sub-account/transfer/subToMaster": 0.1,
+      "sub-account/universalTransfer": 0.1,
+      "managed-subaccount/deposit": 0.1,
+      "managed-subaccount/withdraw": 0.1,
+      "userDataStream": 0.1,
+      "userDataStream/isolated": 0.1,
+      "futures/transfer": 0.1,
+      "lending/customizedFixed/purchase": 0.1,
+      "lending/daily/purchase": 0.1,
+      "lending/daily/redeem": 0.1,
+      "bswap/liquidityAdd": 60,
+      "bswap/liquidityRemove": 60,
+      "bswap/swap": 60,
+      "bswap/claimRewards": 6.667,
+      "blvt/subscribe": 0.1,
+      "blvt/redeem": 0.1,
+      "apiReferral/customization": 1,
+      "apiReferral/userCustomization": 1,
+      "apiReferral/rebate/historicalRecord": 1,
+      "apiReferral/kickback/historicalRecord": 1,
+      "broker/subAccount": 1,
+      "broker/subAccount/margin": 1,
+      "broker/subAccount/futures": 1,
+      "broker/subAccountApi": 1,
+      "broker/subAccountApi/permission": 1,
+      "broker/subAccountApi/commission": 1,
+      "broker/subAccountApi/commission/futures": 1,
+      "broker/subAccountApi/commission/coinFutures": 1,
+      "broker/transfer": 1,
+      "broker/transfer/futures": 1,
+      "broker/rebate/historicalRecord": 1,
+      "broker/subAccount/bnbBurn/spot": 1,
+      "broker/subAccount/bnbBurn/marginInterest": 1,
+      "broker/subAccount/blvt": 1,
+      "broker/subAccountApi/ipRestriction": 1,
+      "broker/subAccountApi/ipRestriction/ipList": 1,
+      "broker/universalTransfer": 1,
+      "broker/subAccountApi/permission/universalTransfer": 1,
+      "broker/subAccountApi/permission/vanillaOptions": 1,
+      "giftcard/createCode": 0.1,
+      "giftcard/redeemCode": 0.1,
+      "giftcard/buyCode": 0.1,
+      "algo/futures/newOrderVp": 20.001,
+      "algo/futures/newOrderTwap": 20.001,
+      "staking/purchase": 0.1,
+      "staking/redeem": 0.1,
+      "staking/setAutoStaking": 0.1,
+      "portfolio/repay": 20.001,
+      "loan/borrow": 40,
+      "loan/repay": 40,
+      "loan/adjust/ltv": 40,
+      "loan/customize/margin_call": 40,
+      "loan/vip/repay": 40,
+      "convert/getQuote": 20.001,
+      "convert/acceptQuote": 3.3335
+    },
+    "put": {
+      "userDataStream": 0.1,
+      "userDataStream/isolated": 0.1
+    },
+    "delete": {
+      "margin/openOrders": 0.1,
+      "margin/order": 0.0066667,
+      "margin/orderList": 0.0066667,
+      "margin/isolated/account": 2.0001,
+      "userDataStream": 0.1,
+      "userDataStream/isolated": 0.1,
+      "broker/subAccountApi": 1,
+      "broker/subAccountApi/ipRestriction/ipList": 1,
+      "algo/futures/order": 0.1
+    }
+  },
+  "sapiV2": {
+    "get": {
+      "sub-account/futures/account": 0.1,
+      "sub-account/futures/positionRisk": 0.1
+    }
+  },
+  "sapiV3": {
+    "get": {
+      "sub-account/assets": 1
+    },
+    "post": {
+      "asset/getUserAsset": 0.5
+    }
+  },
+  "wapi": {
+    "post": {
+      "withdraw": 1,
+      "sub-account/transfer": 1
+    },
+    "get": {
+      "depositHistory": 1,
+      "withdrawHistory": 1,
+      "depositAddress": 1,
+      "accountStatus": 1,
+      "systemStatus": 1,
+      "apiTradingStatus": 1,
+      "userAssetDribbletLog": 1,
+      "tradeFee": 1,
+      "assetDetail": 1,
+      "sub-account/list": 1,
+      "sub-account/transfer/history": 1,
+      "sub-account/assets": 1
+    }
+  },
+  "dapiPublic": {
+    "get": {
+      "ping": 1,
+      "time": 1,
+      "exchangeInfo": 1,
+      "depth": {
+        "cost": 2,
+        "byLimit": [
+          [
+            50,
+            2
+          ],
+          [
+            100,
+            5
+          ],
+          [
+            500,
+            10
+          ],
+          [
+            1000,
+            20
+          ]
+        ]
+      },
+      "trades": 5,
+      "historicalTrades": 20,
+      "aggTrades": 20,
+      "premiumIndex": 10,
+      "fundingRate": 1,
+      "klines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "continuousKlines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "indexPriceKlines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "markPriceKlines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "ticker/24hr": {
+        "cost": 1,
+        "noSymbol": 40
+      },
+      "ticker/price": {
+        "cost": 1,
+        "noSymbol": 2
+      },
+      "ticker/bookTicker": {
+        "cost": 1,
+        "noSymbol": 2
+      },
+      "openInterest": 1,
+      "pmExchangeInfo": 1
+    }
+  },
+  "dapiData": {
+    "get": {
+      "openInterestHist": 1,
+      "topLongShortAccountRatio": 1,
+      "topLongShortPositionRatio": 1,
+      "globalLongShortAccountRatio": 1,
+      "takerBuySellVol": 1,
+      "basis": 1
+    }
+  },
+  "dapiPrivate": {
+    "get": {
+      "positionSide/dual": 30,
+      "order": 1,
+      "openOrder": 1,
+      "openOrders": {
+        "cost": 1,
+        "noSymbol": 5
+      },
+      "allOrders": {
+        "cost": 20,
+        "noSymbol": 40
+      },
+      "balance": 1,
+      "account": 5,
+      "positionMargin/history": 1,
+      "positionRisk": 1,
+      "userTrades": {
+        "cost": 20,
+        "noSymbol": 40
+      },
+      "income": 20,
+      "leverageBracket": 1,
+      "forceOrders": {
+        "cost": 20,
+        "noSymbol": 50
+      },
+      "adlQuantile": 5,
+      "orderAmendment": 1,
+      "pmAccountInfo": 5
+    },
+    "post": {
+      "positionSide/dual": 1,
+      "order": 4,
+      "batchOrders": 5,
+      "countdownCancelAll": 10,
+      "leverage": 1,
+      "marginType": 1,
+      "positionMargin": 1,
+      "listenKey": 1
+    },
+    "put": {
+      "listenKey": 1,
+      "order": 1,
+      "batchOrders": 5
+    },
+    "delete": {
+      "order": 1,
+      "allOpenOrders": 1,
+      "batchOrders": 5,
+      "listenKey": 1
+    }
+  },
+  "dapiPrivateV2": {
+    "get": {
+      "leverageBracket": 1
+    }
+  },
+  "fapiPublic": {
+    "get": {
+      "ping": 1,
+      "time": 1,
+      "exchangeInfo": 1,
+      "depth": {
+        "cost": 2,
+        "byLimit": [
+          [
+            50,
+            2
+          ],
+          [
+            100,
+            5
+          ],
+          [
+            500,
+            10
+          ],
+          [
+            1000,
+            20
+          ]
+        ]
+      },
+      "trades": 5,
+      "historicalTrades": 20,
+      "aggTrades": 20,
+      "klines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "continuousKlines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "markPriceKlines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "indexPriceKlines": {
+        "cost": 1,
+        "byLimit": [
+          [
+            99,
+            1
+          ],
+          [
+            499,
+            2
+          ],
+          [
+            1000,
+            5
+          ],
+          [
+            10000,
+            10
+          ]
+        ]
+      },
+      "fundingRate": 1,
+      "premiumIndex": 1,
+      "ticker/24hr": {
+        "cost": 1,
+        "noSymbol": 40
+      },
+      "ticker/price": {
+        "cost": 1,
+        "noSymbol": 2
+      },
+      "ticker/bookTicker": {
+        "cost": 1,
+        "noSymbol": 2
+      },
+      "openInterest": 1,
+      "indexInfo": 1,
+      "apiTradingStatus": {
+        "cost": 1,
+        "noSymbol": 10
+      },
+      "lvtKlines": 1,
+      "pmExchangeInfo": 1
+    }
+  },
+  "fapiData": {
+    "get": {
+      "openInterestHist": 1,
+      "topLongShortAccountRatio": 1,
+      "topLongShortPositionRatio": 1,
+      "globalLongShortAccountRatio": 1,
+      "takerlongshortRatio": 1
+    }
+  },
+  "fapiPrivate": {
+    "get": {
+      "forceOrders": {
+        "cost": 20,
+        "noSymbol": 50
+      },
+      "allOrders": 5,
+      "openOrder": 1,
+      "openOrders": 1,
+      "order": 1,
+      "account": 5,
+      "balance": 5,
+      "leverageBracket": 1,
+      "positionMargin/history": 1,
+      "positionRisk": 5,
+      "positionSide/dual": 30,
+      "userTrades": 5,
+      "income": 30,
+      "commissionRate": 20,
+      "apiTradingStatus": 1,
+      "multiAssetsMargin": 30,
+      "apiReferral/ifNewUser": 1,
+      "apiReferral/customization": 1,
+      "apiReferral/userCustomization": 1,
+      "apiReferral/traderNum": 1,
+      "apiReferral/overview": 1,
+      "apiReferral/tradeVol": 1,
+      "apiReferral/rebateVol": 1,
+      "apiReferral/traderSummary": 1,
+      "adlQuantile": 5,
+      "pmAccountInfo": 5
+    },
+    "post": {
+      "batchOrders": 5,
+      "positionSide/dual": 1,
+      "positionMargin": 1,
+      "marginType": 1,
+      "order": 4,
+      "leverage": 1,
+      "listenKey": 1,
+      "countdownCancelAll": 10,
+      "multiAssetsMargin": 1,
+      "apiReferral/customization": 1,
+      "apiReferral/userCustomization": 1
+    },
+    "put": {
+      "listenKey": 1
+    },
+    "delete": {
+      "batchOrders": 1,
+      "order": 1,
+      "allOpenOrders": 1,
+      "listenKey": 1
+    }
+  },
+  "fapiPrivateV2": {
+    "get": {
+      "account": 1,
+      "balance": 1,
+      "positionRisk": 1
+    }
+  },
+  "eapiPublic": {
+    "get": {
+      "ping": 1,
+      "time": 1,
+      "exchangeInfo": 1,
+      "index": 1,
+      "ticker": 5,
+      "mark": 5,
+      "depth": 1,
+      "klines": 1,
+      "trades": 5,
+      "historicalTrades": 20,
+      "exerciseHistory": 3,
+      "openInterest": 3
+    }
+  },
+  "eapiPrivate": {
+    "get": {
+      "account": 3,
+      "position": 5,
+      "openOrders": {
+        "cost": 1,
+        "noSymbol": 40
+      },
+      "historyOrders": 3,
+      "userTrades": 5,
+      "exerciseRecord": 5,
+      "bill": 1,
+      "marginAccount": 3,
+      "mmp": 1,
+      "countdownCancelAll": 1
+    },
+    "post": {
+      "transfer": 1,
+      "order": 1,
+      "batchOrders": 5,
+      "listenKey": 1,
+      "mmpSet": 1,
+      "mmpReset": 1,
+      "countdownCancelAll": 1,
+      "countdownCancelAllHeartBeat": 10
+    },
+    "put": {
+      "listenKey": 1
+    },
+    "delete": {
+      "order": 1,
+      "batchOrders": 1,
+      "allOpenOrders": 1,
+      "allOpenOrdersByUnderlying": 1,
+      "listenKey": 1
+    }
+  },
+  "public": {
+    "get": {
+      "ping": 1,
+      "time": 1,
+      "depth": {
+        "cost": 1,
+        "byLimit": [
+          [
+            100,
+            1
+          ],
+          [
+            500,
+            5
+          ],
+          [
+            1000,
+            10
+          ],
+          [
+            5000,
+            50
+          ]
+        ]
+      },
+      "trades": 1,
+      "aggTrades": 1,
+      "historicalTrades": 5,
+      "klines": 1,
+      "ticker/24hr": {
+        "cost": 1,
+        "noSymbol": 40
+      },
+      "ticker/price": {
+        "cost": 1,
+        "noSymbol": 2
+      },
+      "ticker/bookTicker": {
+        "cost": 1,
+        "noSymbol": 2
+      },
+      "exchangeInfo": 10
+    },
+    "put": {
+      "userDataStream": 1
+    },
+    "post": {
+      "userDataStream": 1
+    },
+    "delete": {
+      "userDataStream": 1
+    }
+  },
+  "private": {
+    "get": {
+      "allOrderList": 10,
+      "openOrderList": 3,
+      "orderList": 2,
+      "order": 2,
+      "openOrders": {
+        "cost": 3,
+        "noSymbol": 40
+      },
+      "allOrders": 10,
+      "account": 10,
+      "myTrades": 10,
+      "rateLimit/order": 20
+    },
+    "post": {
+      "order/oco": 1,
+      "order": 1,
+      "order/cancelReplace": 1,
+      "order/test": 1
+    },
+    "delete": {
+      "openOrders": 1,
+      "orderList": 1,
+      "order": 1
+    }
+  }
+}
