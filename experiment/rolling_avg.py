@@ -23,6 +23,4 @@ print(rolling)
 
 print(df['rate'].mean())
 print('===============')
-print(df)
-z = abs(df['rate'][-3:].min() - df['rate'][-3:].mean()) < 0.01
-print(z)
+print(df.tail(2).head(1))

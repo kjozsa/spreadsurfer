@@ -12,7 +12,6 @@ from dateutil.relativedelta import relativedelta
 from loguru import logger
 
 config = json.load(open('./config.json'))
-print(config)
 
 exchange = ccxt.binance({
     'apiKey': config['binance']['apiKey'],
@@ -37,6 +36,9 @@ async def scrape_trades():
     wave_start = anywhere_in_the_past
     wave = pd.DataFrame(columns=['ms' 'price', 'amount'])
     wave_stabilized = None
+    wave_stabilized_at_frame = None
+    wave_stabilized_at_price = None
+    wave_long_running = False
     df = pd.DataFrame(columns=['ms', 'nr_trades', 'price', 'amount'])
     last_trade_count = 0
 
@@ -44,7 +46,6 @@ async def scrape_trades():
         trades = await exchange.watch_trades('BTC/USDT')
         fresh_data = []
         for trade in trades:
-            # logger.debug(f'{exchange.iso8601(exchange.milliseconds())}, {trade["symbol"]}, {trade["datetime"]}, {trade["price"]}, {trade["amount"]}')
             fresh_data.append({'ms': dateparser.parse(trade['datetime']), 'price': trade['price'], 'amount': trade['amount']})
         df = pd.concat([df, pd.DataFrame(fresh_data)])
 
@@ -61,24 +62,31 @@ async def scrape_trades():
         amount_mean = df["amount"].mean()
 
         # analyze wave start/end, collect wave data
-        if last_trade_count == 0 and nr_trades > 0:
+        if last_trade_count == 0 and nr_trades > 0:  # START WAVE
             logger.warning('starting new wave')
             wave = wave.head(0)
             wave_start = now()
-            wave_stabilized = None
 
-        if nr_trades < last_trade_count:
+        if nr_trades < last_trade_count:  # END WAVE
             wave_length_ms = timedelta_ms(now(), wave_start)
+            last_price = wave.tail(1)['price_mean'][0]
             logger.warning(f'ending wave, wave length was {wave_length_ms} ms')
+            if wave_stabilized_at_price is not None:
+                logger.info(f'delta(end-stabilized) = {round(last_price - wave_stabilized_at_price, 4)}')
+            wave_stabilized = None
+            wave_stabilized_at_frame = None
+            wave_stabilized_at_price = None
+            wave_long_running = False
+        else:
+            wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
+            wave = pd.concat([wave, wave_frame])
         last_trade_count = nr_trades
 
         logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {amount_mean}')
-        wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
-        wave = pd.concat([wave, wave_frame])
 
         # check wave stabilization
         wave_min_length = 6  # TODO config
-        wave_length_to_investigate = 3  # TODO config
+        wave_length_to_investigate = 4  # TODO config
         wave_stabilized_threshold = 0.01  # TODO config
         if len(wave) > wave_min_length:
             last_waves = wave[-wave_length_to_investigate:]
@@ -89,10 +97,19 @@ async def scrape_trades():
             if not wave_stabilized and not (wave_min_stabilized and wave_max_stabilized):
                 if wave_min_stabilized:
                     wave_stabilized = "min"
-                    logger.error('wave min stabilized in {} ms', timedelta_ms(now(), wave_start))
+                    logger.error('wave MIN stabilized in {} ms', timedelta_ms(now(), wave_start))
+                    wave_stabilized_at_price = price_mean
+                    wave_stabilized_at_frame = len(wave)
                 if wave_max_stabilized:
                     wave_stabilized = "max"
-                    logger.error('wave max stabilized in {} ms', timedelta_ms(now(), wave_start))
+                    logger.error('wave MAX stabilized in {} ms', timedelta_ms(now(), wave_start))
+                    wave_stabilized_at_price = price_mean
+                    wave_stabilized_at_frame = len(wave)
+
+            if wave_stabilized is not None and not wave_long_running:
+                if len(wave) - wave_stabilized_at_frame > 8:
+                    logger.error("WARNING! LONG RUNNING WAVE!")
+                    wave_long_running = True
 
 
 # orders on websocket
