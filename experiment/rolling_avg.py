@@ -9,6 +9,7 @@ samples = [
 samples2 = [
     {'ms': 1673361751273, 'rate': 10},
     {'ms': 1673361751277, 'rate': 10},
+    {'ms': 1673361751279, 'rate': 10.02},
 ]
 
 df = pd.DataFrame(samples)
@@ -21,3 +22,7 @@ rolling = df.rolling(window=2).mean()
 print(rolling)
 
 print(df['rate'].mean())
+print('===============')
+print(df)
+z = abs(df['rate'][-3:].min() - df['rate'][-3:].mean()) < 0.01
+print(z)
