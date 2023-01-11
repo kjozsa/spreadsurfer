@@ -38,6 +38,7 @@ async def scrape_trades():
     wave_stabilized = None
     wave_stabilized_at_frame = None
     wave_stabilized_at_price = None
+    wave_running = True
     wave_long_running = False
     df = pd.DataFrame(columns=['ms', 'nr_trades', 'price', 'amount'])
     last_trade_count = 0
@@ -53,7 +54,7 @@ async def scrape_trades():
         start = now() - relativedelta(microsecond=100 * 1000)
         df = df[df.ms >= start]
 
-        # collect stats
+        # collect mean/min/max/spread
         nr_trades = len(df)  # nr of trades in defined timewindow
         price_mean = df['price'].mean()
         price_min = df['price'].min()
@@ -66,6 +67,7 @@ async def scrape_trades():
             logger.warning('starting new wave')
             wave = wave.head(0)
             wave_start = now()
+            wave_running = True
 
         if nr_trades < last_trade_count:  # END WAVE
             wave_length_ms = timedelta_ms(now(), wave_start)
@@ -76,6 +78,7 @@ async def scrape_trades():
             wave_stabilized = None
             wave_stabilized_at_frame = None
             wave_stabilized_at_price = None
+            wave_running = False
             wave_long_running = False
         else:
             wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
@@ -88,11 +91,12 @@ async def scrape_trades():
         wave_min_length = 6  # TODO config
         wave_length_to_investigate = 4  # TODO config
         wave_stabilized_threshold = 0.01  # TODO config
-        if len(wave) > wave_min_length:
-            last_waves = wave[-wave_length_to_investigate:]
-            if len(last_waves) != wave_length_to_investigate: raise AssertionError
-            wave_min_stabilized = abs(last_waves['price_min'].min() - last_waves['price_min'].mean()) < wave_stabilized_threshold
-            wave_max_stabilized = abs(last_waves['price_max'].max() - last_waves['price_max'].mean()) < wave_stabilized_threshold
+        wave_long_running_length = 8 # TODO config
+        if wave_running and len(wave) > wave_min_length:
+            last_frames = wave[-wave_length_to_investigate:]
+            if len(last_frames) != wave_length_to_investigate: raise AssertionError
+            wave_min_stabilized = abs(last_frames['price_min'].min() - last_frames['price_min'].mean()) < wave_stabilized_threshold
+            wave_max_stabilized = abs(last_frames['price_max'].max() - last_frames['price_max'].mean()) < wave_stabilized_threshold
 
             if not wave_stabilized and not (wave_min_stabilized and wave_max_stabilized):
                 if wave_min_stabilized:
@@ -106,10 +110,13 @@ async def scrape_trades():
                     wave_stabilized_at_price = price_mean
                     wave_stabilized_at_frame = len(wave)
 
-            if wave_stabilized is not None and not wave_long_running:
-                if len(wave) - wave_stabilized_at_frame > 8:
-                    logger.error("WARNING! LONG RUNNING WAVE!")
+            if wave_stabilized and not wave_long_running:
+                if len(wave) - wave_stabilized_at_frame > wave_long_running_length:
+                    logger.error("LONG RUNNING WAVE! Attempting to restabilize..")
                     wave_long_running = True
+                    wave_stabilized = False
+                    wave_min_stabilized = None
+                    wave_max_stabilized = None
 
 
 # orders on websocket
