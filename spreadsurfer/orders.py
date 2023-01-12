@@ -1,3 +1,4 @@
+import json
 import asyncio
 from loguru import logger
 import ccxt.pro as ccxt
@@ -56,25 +57,28 @@ class OrderMaker:
         spread = wave_frame['spread'][0]
 
         low_price, high_price = scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint)
-        amount = 0.001  # ~ $18.1
+        base_amount = 0.001  # ~ $18.1
 
-        buy_amount = round(amount + 0.001 * self.balance_watcher.percentage_usd(price_mean), 8)
-        sell_amount = round(amount + 0.001 * self.balance_watcher.percentage_btc(price_mean), 8)
+        buy_amount = round(base_amount + 0.001 * self.balance_watcher.percentage_usd(price_mean), 8)
+        sell_amount = round(base_amount + 0.001 * self.balance_watcher.percentage_btc(price_mean), 8)
 
-        logger.success('creating orders at mean price {}. Buy {} at {}, Sell {} at {}. Spread: {}', price_mean, buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
+        logger.success('creating orders, buy {} at {}, bell {} at {}. Spread: {}', buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
         new_orders = []
         try:
             buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': test_mode})
-            logger.success('BUY ORDER PLACED!! - {}', buy_order)
-            new_orders += buy_order
+            logger.success('BUY ORDER PLACED!! - {} {}', type(buy_order), buy_order)
+            if test_mode:
+                buy_order['id'] = 17253897422
+            new_orders.append(buy_order)
         except Exception as e:
             logger.error(e)
 
         try:
             sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': test_mode})
-            logger.debug(sell_order)
-            logger.success('SELL ORDER PLACED!! - {}', sell_order)
-            new_orders += sell_order
+            logger.success('SELL ORDER PLACED!! - {} {}', type(sell_order), sell_order)
+            if test_mode:
+                sell_order['id'] = 17253897423
+            new_orders.append(sell_order)
 
         except Exception as e:
             logger.error(e)
@@ -82,11 +86,10 @@ class OrderMaker:
 
     async def cancel_orders(self, wave_id, wave_frame):
         if wave_id in self.active_orders.keys():
-            orders = self.active_orders.pop(wave_id)
-            logger.success('cancelling {} orders ', len(orders))
+            clear_orders = self.active_orders.pop(wave_id)
+            logger.success('cancelling {} orders ', len(clear_orders))
             try:
-                for order in orders:
-                    await self.exchange.cancel_order(order['id'], order['symbol'], {'test': test_mode})
-                logger.success('CANCELS done!!')
+                for order in clear_orders:
+                    await self.exchange.cancel_order(order['id'], symbol=order['symbol'])
             except Exception as e:
-                logger.error(e)
+                logger.exception(e)

@@ -58,8 +58,6 @@ class WaveHandler:
         self.wave_length_ms = timedelta_ms(now(), self.wave_start)
         logger.warning(f'ending wave, wave length was {self.wave_length_ms} ms')
         last_price = last_wave['price_mean'][0]
-        if self.wave_stabilized_at_price is not None:
-            logger.error(f'delta(end_price - last_stabilized) = {round(last_price - self.wave_stabilized_at_price, 4)}')
 
         self.wave_stabilized = None
         self.wave_stabilized_at_frame = None

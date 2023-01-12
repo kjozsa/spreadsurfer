@@ -1,11 +1,12 @@
 from spreadsurfer import *
+import sys
 import asyncio
 from loguru import logger
-
 
 # logger.remove()
 # logger.add(sys.stdout, level="INFO")
 logger.level("magenta", color='<magenta>', no=25)
+sys.tracebacklimit = 1
 
 
 @logger.catch
