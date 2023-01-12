@@ -87,9 +87,9 @@ class OrderMaker:
     async def cancel_orders(self, wave_id, wave_frame):
         if wave_id in self.active_orders.keys():
             clear_orders = self.active_orders.pop(wave_id)
-            logger.success('cancelling {} orders ', len(clear_orders))
-            try:
-                for order in clear_orders:
+            logger.success('cancelling potential {} orders in wave', len(clear_orders))
+            for order in clear_orders:
+                try:
                     await self.exchange.cancel_order(order['id'], symbol=order['symbol'])
-            except Exception as e:
-                logger.exception(e)
+                except:
+                    pass  # ignore errors on cancelling orders because they might got fulfilled already
