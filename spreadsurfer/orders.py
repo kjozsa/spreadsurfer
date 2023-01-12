@@ -7,11 +7,14 @@ from spreadsurfer import *
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
+test_mode = True
+max_nr_orders_created = 50
+
 
 def scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint):
     low_price = price_min
     high_price = price_max
-    hint_buff_factor = 0.000075
+    hint_buff_factor = 0.000065
 
     match stabilized_hint:
         case 'min':  # raising price?
@@ -32,14 +35,13 @@ class OrderMaker:
         self.active_orders = {}
         self.nr_orders_created = 0
         self.nr_orders_fulfilled = 0
-        self.max_nr_orders_created = 5
 
     async def start(self):
         while True:
             (wave_id, event_name, wave_frame, stabilized_hint) = await self.orders_queue.get()
             match event_name:
                 case 'create':
-                    if self.nr_orders_created < self.max_nr_orders_created:
+                    if self.nr_orders_created < max_nr_orders_created:
                         await self.create_orders(wave_id, wave_frame, stabilized_hint)
                         self.nr_orders_created += 1
                     else:
@@ -60,24 +62,31 @@ class OrderMaker:
         sell_amount = round(amount + 0.001 * self.balance_watcher.percentage_btc(price_mean), 8)
 
         logger.success('creating orders at mean price {}. Buy {} at {}, Sell {} at {}. Spread: {}', price_mean, buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
+        new_orders = []
         try:
-            buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': True})
-            logger.success('ORDER1 PLACED!!')
-            logger.debug(buy_order)
-            sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': True})
-            logger.debug(sell_order)
-            logger.success('ORDER2 PLACED!!')
-            self.active_orders[wave_id] = (buy_order, sell_order)
+            buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': test_mode})
+            logger.success('BUY ORDER PLACED!! - {}', buy_order)
+            new_orders += buy_order
         except Exception as e:
             logger.error(e)
 
+        try:
+            sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': test_mode})
+            logger.debug(sell_order)
+            logger.success('SELL ORDER PLACED!! - {}', sell_order)
+            new_orders += sell_order
+
+        except Exception as e:
+            logger.error(e)
+        self.active_orders[wave_id] = new_orders
+
     async def cancel_orders(self, wave_id, wave_frame):
         if wave_id in self.active_orders.keys():
-            buy_order, sell_order = self.active_orders.pop(wave_id)
-            logger.success('cancelling orders made at price {} / {} ', buy_order['price'], sell_order['price'])
+            orders = self.active_orders.pop(wave_id)
+            logger.success('cancelling {} orders ', len(orders))
             try:
-                await self.exchange.cancel_order(buy_order['id'], 'BTC/USDT', {'test': True})
-                await self.exchange.cancel_order(sell_order['id'], 'BTC/USDT', {'test': True})
+                for order in orders:
+                    await self.exchange.cancel_order(order['id'], order['symbol'], {'test': test_mode})
                 logger.success('CANCELS done!!')
             except Exception as e:
                 logger.error(e)
