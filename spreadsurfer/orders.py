@@ -1,28 +1,31 @@
-import json
 import asyncio
 from loguru import logger
 import ccxt.pro as ccxt
+import json
 from spreadsurfer import *
 
 # enable ccxt debug logging:
 # import logging
 # logging.basicConfig(level=logging.DEBUG)
 
-test_mode = True
-max_nr_orders_created = 50
+order_config = json.load(open('config.json'))['orders']
+logger.info('order config: {}', order_config)
+
+test_mode = order_config['test_mode']
+max_nr_orders_limited = order_config['max_nr_orders_limited']
+max_nr_orders_created = order_config['max_nr_orders_created']
+hint_buff_factor = order_config['hint_buff_factor']
+
 
 
 def scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint):
     low_price = price_min
     high_price = price_max
-    hint_buff_factor = 0.000065
 
     match stabilized_hint:
         case 'min':  # raising price?
-            logger.warning("buffing high_price")
             high_price = high_price * (1 + hint_buff_factor)
         case 'max':  # lowering price?
-            logger.warning("buffing low_price")
             low_price = low_price * (1 - hint_buff_factor)
     return low_price, high_price
 
@@ -42,7 +45,7 @@ class OrderMaker:
             (wave_id, event_name, wave_frame, stabilized_hint) = await self.orders_queue.get()
             match event_name:
                 case 'create':
-                    if self.nr_orders_created < max_nr_orders_created:
+                    if (not max_nr_orders_limited) or self.nr_orders_created < max_nr_orders_created:
                         await self.create_orders(wave_id, wave_frame, stabilized_hint)
                         self.nr_orders_created += 1
                     else:
@@ -57,10 +60,10 @@ class OrderMaker:
         spread = wave_frame['spread'][0]
 
         low_price, high_price = scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint)
-        base_amount = 0.001  # ~ $18.1
 
-        buy_amount = round(base_amount + 0.001 * self.balance_watcher.percentage_usd(price_mean), 8)
-        sell_amount = round(base_amount + 0.001 * self.balance_watcher.percentage_btc(price_mean), 8)
+        base_amount = 0.0015
+        buy_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_usd(price_mean), 8)
+        sell_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_btc(price_mean), 8)
 
         logger.success('creating orders, buy {} at {}, sell {} at {}. Spread: {}', buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
         new_orders = []
