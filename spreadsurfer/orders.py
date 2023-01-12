@@ -62,7 +62,7 @@ class OrderMaker:
         buy_amount = round(base_amount + 0.001 * self.balance_watcher.percentage_usd(price_mean), 8)
         sell_amount = round(base_amount + 0.001 * self.balance_watcher.percentage_btc(price_mean), 8)
 
-        logger.success('creating orders, buy {} at {}, bell {} at {}. Spread: {}', buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
+        logger.success('creating orders, buy {} at {}, sell {} at {}. Spread: {}', buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
         new_orders = []
         try:
             buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': test_mode})
