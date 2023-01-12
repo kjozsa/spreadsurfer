@@ -35,8 +35,7 @@ def timedelta_ms(start, end):
 
 @logger.catch()
 async def scrape_trades():
-    anywhere_in_the_past = now() - relativedelta(days=1)
-    wave_start = anywhere_in_the_past
+    wave_start = None
     wave = pd.DataFrame(columns=['ms' 'price', 'amount'])
     wave_stabilized = None
     wave_stabilized_at_frame = None
