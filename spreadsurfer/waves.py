@@ -12,7 +12,6 @@ logger.info('wave detection config: {}', wave_config)
 wave_min_length = wave_config['min_length']
 wave_investigate_length = wave_config['investigate_length']
 wave_stabilized_threshold = wave_config['stabilized_threshold']
-wave_long_running_length = wave_config['long_running_length']
 
 
 class WaveHandler:
@@ -27,7 +26,6 @@ class WaveHandler:
         self.wave_stabilized_at_frame = None
         self.wave_stabilized_at_price = None
         self.wave_running = True
-        self.wave_long_running = False
         self.wave_length_ms = None
 
     async def start(self):
@@ -67,7 +65,6 @@ class WaveHandler:
         self.wave_stabilized_at_frame = None
         self.wave_stabilized_at_price = None
         self.wave_running = False
-        self.wave_long_running = False
 
     async def check_stabilized(self, wave_frame):
         if self.wave_running and len(self.wave) > wave_min_length:
@@ -83,18 +80,17 @@ class WaveHandler:
                     logger.info('wave MIN stabilized in {} ms', timedelta_ms(now(), self.wave_start))
                     self.wave_stabilized_at_price = price_mean
                     self.wave_stabilized_at_frame = len(self.wave)
-                    await self.orders_queue.put((self.wave_id, 'create', wave_frame, 'stable_min'))
+                    await self.orders_queue.put((self.wave_id, 'create', wave_frame, 'min'))
 
                 if wave_max_stabilized:
                     self.wave_stabilized = "max"
                     logger.info('wave MAX stabilized in {} ms', timedelta_ms(now(), self.wave_start))
                     self.wave_stabilized_at_price = price_mean
                     self.wave_stabilized_at_frame = len(self.wave)
-                    await self.orders_queue.put((self.wave_id, 'create', wave_frame, 'stable_max'))
+                    await self.orders_queue.put((self.wave_id, 'create', wave_frame, 'max'))
 
-            if self.wave_stabilized and not self.wave_long_running:
-                if len(self.wave) - self.wave_stabilized_at_frame > wave_long_running_length:
-                    logger.info("LONG RUNNING WAVE! Attempting to restabilize..")
+            if (self.wave_stabilized == 'min' and not wave_min_stabilized) \
+                    or (self.wave_stabilized == 'max' and not wave_max_stabilized):
+                    logger.info("WAVE IS CHANGING, Attempting to restabilize..")
                     await self.orders_queue.put((self.wave_id, 'cancel', wave_frame, None))
-                    self.wave_long_running = True
                     self.wave_stabilized = False
