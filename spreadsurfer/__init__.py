@@ -1,6 +1,6 @@
 from .timetracker import TimeTracker
-from .tradewatcher import TradeWatcher
-from .wavehandler import WaveHandler
+from .trades import TradeWatcher
+from .waves import WaveHandler
 from .timeutils import *
-from .exchangeconnector import connect_exchange
-
+from .connector import connect_exchange
+from .orders import OrderMaker

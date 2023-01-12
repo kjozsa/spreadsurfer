@@ -8,14 +8,16 @@ from loguru import logger
 
 @logger.catch
 async def main():
-    wave_events_queue = asyncio.Queue()
+    wave_events_queue = asyncio.Queue(maxsize=1)
+    orders_queue = asyncio.Queue(maxsize=1)
     exchange = connect_exchange()
 
     try:
         coroutines = [
             TimeTracker(),
             TradeWatcher(exchange, wave_events_queue),
-            WaveHandler(wave_events_queue)
+            WaveHandler(wave_events_queue, orders_queue),
+            OrderMaker(exchange, orders_queue)
         ]
         tasks = [asyncio.create_task(x.start()) for x in coroutines]
         await asyncio.gather(*tasks)
