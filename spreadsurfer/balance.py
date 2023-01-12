@@ -2,10 +2,6 @@ import ccxt.pro as ccxt
 from loguru import logger
 
 
-def parse_balances(balance):
-    return [float(x['free']) for x in balance['info']['balances'] if x['asset'] in ['BTC', 'USDT']]
-
-
 class BalanceWatcher:
     def __init__(self, exchange: ccxt.Exchange):
         self.exchange = exchange
@@ -14,13 +10,13 @@ class BalanceWatcher:
 
     async def start(self):
         balance = await self.exchange.fetch_balance()
-        self.balance_btc, self.balance_usd = parse_balances(balance)
+        self.balance_btc, self.balance_usd = [float(x['free']) for x in balance['info']['balances'] if x['asset'] in ['BTC', 'USDT']]
         logger.info('starting balance: BTC: {}, USDT: {}', self.balance_btc, self.balance_usd)
 
         while True:
             try:
                 balance = await self.exchange.watch_balance()
-                self.balance_btc, self.balance_usd = parse_balances(balance)
+                self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']
                 logger.info('balance: BTC: {}, USDT: {}', self.balance_btc, self.balance_usd)
 
             except Exception as e:

@@ -2,3 +2,6 @@ pandas
 loguru
 ccxt
 shortuuid
+bpython
+asyncio
+
