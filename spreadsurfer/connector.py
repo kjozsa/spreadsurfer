@@ -15,5 +15,6 @@ def connect_exchange():
         'newUpdates': True,
         'enableRateLimit': True
     })
+    # exchange.set_sandbox_mode(True)
     return exchange
 

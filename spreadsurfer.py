@@ -5,6 +5,8 @@ from loguru import logger
 
 # logger.remove()
 # logger.add(sys.stdout, level="INFO")
+logger.level("magenta", color='<magenta>', no=25)
+
 
 @logger.catch
 async def main():
@@ -13,11 +15,13 @@ async def main():
     exchange = connect_exchange()
 
     try:
+        balance_watcher = BalanceWatcher(exchange)
         coroutines = [
             TimeTracker(),
+            balance_watcher,
             TradeWatcher(exchange, wave_events_queue),
             WaveHandler(wave_events_queue, orders_queue),
-            OrderMaker(exchange, orders_queue)
+            OrderMaker(exchange, orders_queue, balance_watcher)
         ]
         tasks = [asyncio.create_task(x.start()) for x in coroutines]
         await asyncio.gather(*tasks)

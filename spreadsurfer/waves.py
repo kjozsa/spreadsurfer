@@ -91,6 +91,6 @@ class WaveHandler:
 
             if (self.wave_stabilized == 'min' and not wave_min_stabilized) \
                     or (self.wave_stabilized == 'max' and not wave_max_stabilized):
-                    logger.info("WAVE IS CHANGING, Attempting to restabilize..")
-                    await self.orders_queue.put((self.wave_id, 'cancel', wave_frame, None))
-                    self.wave_stabilized = False
+                logger.log('magenta', 'WAVE IS CHANGING, Attempting to restabilize..')
+                await self.orders_queue.put((self.wave_id, 'cancel', wave_frame, None))
+                self.wave_stabilized = False
