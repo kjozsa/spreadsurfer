@@ -1,5 +1,13 @@
+import sys
+
 import ccxt.pro as ccxt
 from loguru import logger
+import json
+
+wave_config = json.load(open('config.json'))['balance']
+logger.info('balance config: {}', wave_config)
+panic_below_total = wave_config['panic_below_total']
+panic_countdown_from = wave_config['panic_countdown_from']
 
 
 class BalanceWatcher:
@@ -8,6 +16,7 @@ class BalanceWatcher:
         self.balance_btc = None
         self.balance_usd = None
         self.last_btc_usd_rate = None
+        self.panic_countdown = panic_countdown_from
 
     async def start(self):
         balance = await self.exchange.fetch_balance()
@@ -20,6 +29,16 @@ class BalanceWatcher:
                 self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']
                 balance_total = round(self.last_btc_usd_rate * self.balance_btc + self.balance_usd, 2)
                 logger.info('total balance: {}  (BTC: {}, USDT: {})', balance_total, self.balance_btc, self.balance_usd)
+
+                if balance_total < panic_below_total:
+                    self.panic_countdown -= 1
+                    logger.critical('panic situation suspected, current balance under limit ({}), countdown: {}', panic_below_total, self.panic_countdown)
+                else:
+                    self.panic_countdown = panic_countdown_from
+
+                if self.panic_countdown <= 0:
+                    logger.critical('total balance {} below panic level ({}), EXITING..', balance_total, panic_below_total)
+                    sys.exit(1)
 
             except Exception as e:
                 logger.exception(e)

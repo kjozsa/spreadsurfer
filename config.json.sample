@@ -3,6 +3,10 @@
     "apiKey": "",
     "secret": ""
   },
+  "balance": {
+    "panic_below_total": 390
+    "panic_countdown_from": 8
+  },
   "wave": {
     "min_length": 6,
     "investigate_length": 5,
