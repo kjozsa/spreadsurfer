@@ -67,6 +67,26 @@ class OrderMaker:
 
         logger.success('creating orders, buy {} at {}, sell {} at {}. Spread: {}', buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
         new_orders = []
+        match stabilized_hint:
+            case 'min':
+                await self.send_buy_order(buy_amount, low_price, new_orders)
+                await self.send_sell_order(sell_amount, high_price, new_orders)
+            case 'max':
+                await self.send_buy_order(buy_amount, low_price, new_orders)
+                await self.send_sell_order(sell_amount, high_price, new_orders)
+        self.active_orders[wave_id] = new_orders
+
+    async def send_sell_order(self, sell_amount, high_price, new_orders):
+        try:
+            sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': test_mode})
+            logger.success('SELL ORDER PLACED!! - {} {}', type(sell_order), sell_order)
+            if test_mode:
+                sell_order['id'] = 17253897423
+            new_orders.append(sell_order)
+        except Exception as e:
+            logger.error(e)
+
+    async def send_buy_order(self, buy_amount, low_price, new_orders):
         try:
             buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': test_mode})
             logger.success('BUY ORDER PLACED!! - {} {}', type(buy_order), buy_order)
@@ -75,17 +95,6 @@ class OrderMaker:
             new_orders.append(buy_order)
         except Exception as e:
             logger.error(e)
-
-        try:
-            sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': test_mode})
-            logger.success('SELL ORDER PLACED!! - {} {}', type(sell_order), sell_order)
-            if test_mode:
-                sell_order['id'] = 17253897423
-            new_orders.append(sell_order)
-
-        except Exception as e:
-            logger.error(e)
-        self.active_orders[wave_id] = new_orders
 
     async def cancel_orders(self, wave_id, wave_frame):
         if wave_id in self.active_orders.keys():
