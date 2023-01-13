@@ -7,7 +7,8 @@
     "min_length": 6,
     "investigate_length": 5,
     "stabilized_threshold": 0.01,
-    "long_running_length": 8
+    "long_running_length": 8,
+    "max_delta_ms_to_create_order": 500
   },
   "orders": {
     "test_mode": true,

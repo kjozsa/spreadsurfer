@@ -12,6 +12,7 @@ logger.info('wave detection config: {}', wave_config)
 wave_min_length = wave_config['min_length']
 wave_investigate_length = wave_config['investigate_length']
 wave_stabilized_threshold = wave_config['stabilized_threshold']
+max_delta_ms_to_create_order = wave_config['max_delta_ms_to_create_order']
 
 
 class WaveHandler:
@@ -66,6 +67,11 @@ class WaveHandler:
 
     async def check_stabilized(self, wave_frame):
         if self.wave_running and len(self.wave) > wave_min_length:
+            delta_ms = timedelta_ms(now(), self.wave_start)
+            if delta_ms > max_delta_ms_to_create_order:
+                logger.trace('delta_ms is {}, making no order in this wave', delta_ms)
+                return
+
             last_frames = self.wave[-wave_investigate_length:]
             if len(last_frames) != wave_investigate_length: raise AssertionError
             wave_min_stabilized = abs(last_frames['price_min'].min() - last_frames['price_min'].mean()) < wave_stabilized_threshold
@@ -75,14 +81,14 @@ class WaveHandler:
                 price_mean = wave_frame['price_mean'][0]
                 if wave_min_stabilized:
                     self.wave_stabilized = "min"
-                    logger.info('wave MIN stabilized in {} ms', timedelta_ms(now(), self.wave_start))
+                    logger.info('wave MIN stabilized in {} ms', delta_ms)
                     self.wave_stabilized_at_price = price_mean
                     self.wave_stabilized_at_frame = len(self.wave)
                     await self.orders_queue.put((self.wave_id, 'create', wave_frame, 'min'))
 
                 if wave_max_stabilized:
                     self.wave_stabilized = "max"
-                    logger.info('wave MAX stabilized in {} ms', timedelta_ms(now(), self.wave_start))
+                    logger.info('wave MAX stabilized in {} ms', delta_ms)
                     self.wave_stabilized_at_price = price_mean
                     self.wave_stabilized_at_frame = len(self.wave)
                     await self.orders_queue.put((self.wave_id, 'create', wave_frame, 'max'))
