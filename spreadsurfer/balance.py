@@ -32,7 +32,6 @@ class BalanceWatcher:
 
                 if balance_total < panic_below_total:
                     self.panic_countdown -= 1
-                    logger.critical('panic situation suspected, current balance under limit ({}), countdown: {}', panic_below_total, self.panic_countdown)
                 else:
                     self.panic_countdown = panic_countdown_from
 
