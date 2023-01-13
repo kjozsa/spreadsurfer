@@ -7,7 +7,6 @@ class BalanceWatcher:
         self.exchange = exchange
         self.balance_btc = None
         self.balance_usd = None
-        self.balance_total = None
         self.last_btc_usd_rate = None
 
     async def start(self):
@@ -19,7 +18,8 @@ class BalanceWatcher:
             try:
                 balance = await self.exchange.watch_balance()
                 self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']
-                logger.info('total balance: {}  (BTC: {}, USDT: {})', self.balance_total, self.balance_btc, self.balance_usd)
+                balance_total = self.last_btc_usd_rate * self.balance_btc + self.balance_usd
+                logger.info('total balance: {}  (BTC: {}, USDT: {})', balance_total, self.balance_btc, self.balance_usd)
 
             except Exception as e:
                 logger.exception(e)
