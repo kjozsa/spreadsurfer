@@ -15,18 +15,21 @@ test_mode = order_config['test_mode']
 max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
 hint_buff_factor = order_config['hint_buff_factor']
-
+aim_above_min = order_config['aim_above_min']
+aim_below_max = aim_above_min
 
 
 def scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint):
-    low_price = price_min
-    high_price = price_max
+    low_price = None
+    high_price = None
 
     match stabilized_hint:
         case 'min':  # raising price?
-            high_price = high_price * (1 + hint_buff_factor)
+            high_price = price_max * (1 + hint_buff_factor)
+            low_price = price_min + aim_above_min
         case 'max':  # lowering price?
-            low_price = low_price * (1 - hint_buff_factor)
+            low_price = price_min * (1 - hint_buff_factor)
+            high_price = price_max - aim_below_max
     return low_price, high_price
 
 
@@ -60,6 +63,9 @@ class OrderMaker:
         spread = wave_frame['spread'][0]
 
         low_price, high_price = scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint)
+        if low_price is None or high_price is None:
+            logger.error('not creating order, no clear direction received ({})', stabilized_hint)
+            return
 
         base_amount = 0.0015
         buy_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_usd(price_mean), 8)

@@ -14,6 +14,7 @@
     "test_mode": true,
     "max_nr_orders_limited": true,
     "max_nr_orders_created": 50,
-    "hint_buff_factor": 0.000070
+    "hint_buff_factor": 0.000070,
+    "aim_above_min": 0.1
   }
 }
