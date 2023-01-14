@@ -1,3 +1,5 @@
+import sys
+
 import asyncio
 from loguru import logger
 import ccxt.pro as ccxt
@@ -52,7 +54,8 @@ class OrderMaker:
                         await self.create_orders(wave_id, wave_frame, stabilized_hint)
                         self.nr_orders_created += 1
                     else:
-                        logger.critical('max nr of orders created already')
+                        logger.critical('max nr of orders created already, exiting')
+                        sys.exit(0)
                 case 'cancel':
                     await self.cancel_orders(wave_id, wave_frame)
 
