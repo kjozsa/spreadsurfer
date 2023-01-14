@@ -4,4 +4,4 @@ ccxt
 shortuuid
 bpython
 asyncio
-
+websockets

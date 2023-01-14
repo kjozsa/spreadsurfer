@@ -11,13 +11,13 @@ from loguru import logger
 
 config = json.load(open('config.json'))
 
-uri = "wss://testnet.binance.vision/ws-api/v3"
-api_key = "eJANeyXf07voeeNVygX5uO8EEDryj6UkiMKSw6b5MOW8lhf6hEUWmVIeYFMvH67g"
-secret_key = "8BMZram2Le7iBcNZjyBo7yFHkpd8hYUUWUTyljZg1cTUBIkXDRruP39gFYPkHksL"
+# uri = "wss://testnet.binance.vision/ws-api/v3"
+# api_key = "eJANeyXf07voeeNVygX5uO8EEDryj6UkiMKSw6b5MOW8lhf6hEUWmVIeYFMvH67g"
+# secret_key = "8BMZram2Le7iBcNZjyBo7yFHkpd8hYUUWUTyljZg1cTUBIkXDRruP39gFYPkHksL"
 
-# uri = 'wss://ws-api.binance.com/ws-api/v3'
-# api_key = config['binance']['apiKey']
-# secret_key = config['binance']['secret']
+uri = 'wss://ws-api.binance.com/ws-api/v3'
+api_key = config['binance']['apiKey']
+secret_key = config['binance']['secret']
 test_mode = config['orders']['test_mode']
 
 
