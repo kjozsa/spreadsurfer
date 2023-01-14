@@ -21,6 +21,7 @@ hint_buff_factor = order_config['hint_buff_factor']
 aim_above_min = order_config['aim_above_min']
 aim_below_max = aim_above_min
 
+
 def scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint):
     low_price = None
     high_price = None
@@ -43,7 +44,6 @@ class OrderMaker:
 
         self.active_orders = {}
         self.nr_orders_created = 0
-        self.nr_orders_fulfilled = 0
 
     async def start(self):
         while True:
@@ -87,7 +87,7 @@ class OrderMaker:
     async def send_sell_order(self, wave_id, sell_amount, high_price, new_orders):
         try:
             sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': test_mode})
-            logger.success('SELL ORDER PLACED!! wave {} - at price {}', wave_id, high_price)
+            logger.success('#{} SELL ORDER PLACED!! wave {} - at price {}', self.nr_orders_created, wave_id, high_price)
             if test_mode:
                 sell_order['id'] = 17253897423
             new_orders.append(sell_order)
@@ -97,7 +97,7 @@ class OrderMaker:
     async def send_buy_order(self, wave_id, buy_amount, low_price, new_orders):
         try:
             buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': test_mode})
-            logger.success('BUY ORDER PLACED!! wave {} - at price {}', wave_id, low_price)
+            logger.success('#{} BUY ORDER PLACED!! wave {} - at price {}', self.nr_orders_created, wave_id, low_price)
             if test_mode:
                 buy_order['id'] = 17253897422
             new_orders.append(buy_order)
