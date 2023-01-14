@@ -16,10 +16,10 @@ logger.info('order config: {}', order_config)
 test_mode = order_config['test_mode']
 max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
+base_amount = order_config['base_amount']
 hint_buff_factor = order_config['hint_buff_factor']
 aim_above_min = order_config['aim_above_min']
 aim_below_max = aim_above_min
-
 
 def scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint):
     low_price = None
@@ -70,7 +70,6 @@ class OrderMaker:
             logger.error('not creating order, no clear direction received ({})', stabilized_hint)
             return
 
-        base_amount = 0.0015
         buy_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_usd(price_mean), 8)
         sell_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_btc(price_mean), 8)
 
