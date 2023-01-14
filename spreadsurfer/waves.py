@@ -43,11 +43,11 @@ class WaveHandler:
                     raise AssertionError(f'invalid event received: {event_name}')
 
     def start_wave(self):
-        logger.warning('starting new wave')
+        self.wave_id = shortuuid.uuid()
+        logger.warning('starting new wave {}', self.wave_id)
         self.wave = self.wave.head(0)
         self.wave_start = now()
         self.wave_running = True
-        self.wave_id = shortuuid.uuid()
 
     async def receive_frame(self, wave_frame):
         self.wave = pd.concat([self.wave, wave_frame])
@@ -57,7 +57,7 @@ class WaveHandler:
         last_wave = self.wave.tail(1)
         await self.orders_queue.put((self.wave_id, 'cancel', last_wave, None))
         self.wave_length_ms = timedelta_ms(now(), self.wave_start)
-        logger.warning(f'ending wave, wave length was {self.wave_length_ms} ms')
+        logger.warning('ending wave {}, wave length was {} ms', self.wave_id, self.wave_length_ms)
         last_price = last_wave['price_mean'][0]
 
         self.wave_stabilized = None

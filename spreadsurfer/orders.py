@@ -71,31 +71,31 @@ class OrderMaker:
         buy_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_usd(price_mean), 8)
         sell_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_btc(price_mean), 8)
 
-        logger.success('creating orders, buy {} at {}, sell {} at {}. Spread: {}', buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
+        logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
         new_orders = []
         match stabilized_hint:
             case 'min':
-                await self.send_buy_order(buy_amount, low_price, new_orders)
-                await self.send_sell_order(sell_amount, high_price, new_orders)
+                await self.send_buy_order(wave_id, buy_amount, low_price, new_orders)
+                await self.send_sell_order(wave_id, sell_amount, high_price, new_orders)
             case 'max':
-                await self.send_buy_order(buy_amount, low_price, new_orders)
-                await self.send_sell_order(sell_amount, high_price, new_orders)
+                await self.send_buy_order(wave_id, buy_amount, low_price, new_orders)
+                await self.send_sell_order(wave_id, sell_amount, high_price, new_orders)
         self.active_orders[wave_id] = new_orders
 
-    async def send_sell_order(self, sell_amount, high_price, new_orders):
+    async def send_sell_order(self, wave_id, sell_amount, high_price, new_orders):
         try:
             sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': test_mode})
-            logger.success('SELL ORDER PLACED!! - {} {}', type(sell_order), sell_order)
+            logger.success('SELL ORDER PLACED!! wave {} - at price {}', wave_id, high_price)
             if test_mode:
                 sell_order['id'] = 17253897423
             new_orders.append(sell_order)
         except Exception as e:
             logger.error(e)
 
-    async def send_buy_order(self, buy_amount, low_price, new_orders):
+    async def send_buy_order(self, wave_id, buy_amount, low_price, new_orders):
         try:
             buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': test_mode})
-            logger.success('BUY ORDER PLACED!! - {} {}', type(buy_order), buy_order)
+            logger.success('BUY ORDER PLACED!! wave {} - at price {}', wave_id, low_price)
             if test_mode:
                 buy_order['id'] = 17253897422
             new_orders.append(buy_order)
@@ -105,7 +105,7 @@ class OrderMaker:
     async def cancel_orders(self, wave_id, wave_frame):
         if wave_id in self.active_orders.keys():
             clear_orders = self.active_orders.pop(wave_id)
-            logger.success('cancelling potential {} orders in wave', len(clear_orders))
+            logger.success('cancelling potential {} orders in wave {}', len(clear_orders), wave_id)
             for order in clear_orders:
                 try:
                     await self.exchange.cancel_order(order['id'], symbol=order['symbol'])
