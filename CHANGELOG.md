@@ -7,3 +7,6 @@
 - aim just above/below min_price/max_price
 - balance watching should print total balance in USD
 - balance watching should stop complete operation on configurable low limit
+
+# v1.3
+- websocket order placement and cancel

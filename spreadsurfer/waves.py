@@ -43,10 +43,10 @@ class WaveHandler:
                     raise AssertionError(f'invalid event received: {event_name}')
 
     def start_wave(self):
+        self.wave_start = now()
         self.wave_id = shortuuid.uuid()
         logger.warning('starting new wave {}', self.wave_id)
         self.wave = self.wave.head(0)
-        self.wave_start = now()
         self.wave_running = True
 
     async def receive_frame(self, wave_frame):
@@ -58,7 +58,6 @@ class WaveHandler:
         await self.orders_queue.put((self.wave_id, 'cancel', last_wave, None))
         self.wave_length_ms = timedelta_ms(now(), self.wave_start)
         logger.warning('ending wave {}, wave length was {} ms', self.wave_id, self.wave_length_ms)
-        last_price = last_wave['price_mean'][0]
 
         self.wave_stabilized = None
         self.wave_stabilized_at_frame = None
@@ -67,7 +66,7 @@ class WaveHandler:
 
     async def check_stabilized(self, wave_frame):
         if self.wave_running and len(self.wave) > wave_min_length:
-            delta_ms = timedelta_ms(now(), self.wave_start)
+            delta_ms = timedelta_ms(now(), self.wave_start) if self.wave_start else 0
             if delta_ms > max_delta_ms_to_create_order:
                 logger.trace('delta_ms is {}, making no order in this wave', delta_ms)
                 return

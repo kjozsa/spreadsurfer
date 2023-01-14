@@ -1,5 +1,3 @@
-import sys
-
 import ccxt.pro as ccxt
 from loguru import logger
 import json
@@ -37,7 +35,7 @@ class BalanceWatcher:
 
                 if self.panic_countdown <= 0:
                     logger.critical('total balance {} below panic level ({}), EXITING..', balance_total, panic_below_total)
-                    sys.exit(1)
+                    quit(1)
 
             except Exception as e:
                 logger.exception(e)

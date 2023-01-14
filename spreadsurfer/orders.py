@@ -1,10 +1,11 @@
-import sys
+import json
 
 import asyncio
-from loguru import logger
 import ccxt.pro as ccxt
-import json
+from loguru import logger
+
 from spreadsurfer import *
+from spreadsurfer.connector_binance_wss import BinanceWebsocketConnector
 
 # enable ccxt debug logging:
 # import logging
@@ -33,7 +34,7 @@ def scientific_price_calculation(price_mean, price_min, price_max, spread, stabi
         case 'max':  # lowering price?
             low_price = price_min * (1 - hint_buff_factor)
             high_price = price_max - aim_below_max
-    return low_price, high_price
+    return round(low_price, 2), round(high_price, 2)
 
 
 class OrderMaker:
@@ -44,20 +45,23 @@ class OrderMaker:
 
         self.active_orders = {}
         self.nr_orders_created = 0
+        self.connector_wss = BinanceWebsocketConnector()
 
     async def start(self):
+        await self.connector_wss.start()
+
         while True:
             (wave_id, event_name, wave_frame, stabilized_hint) = await self.orders_queue.get()
             match event_name:
                 case 'create':
-                    if (not max_nr_orders_limited) or self.nr_orders_created < max_nr_orders_created:
-                        await self.create_orders(wave_id, wave_frame, stabilized_hint)
-                        self.nr_orders_created += 1
-                    else:
-                        logger.critical('max nr of orders created already, exiting')
-                        sys.exit(0)
+                    await self.create_orders(wave_id, wave_frame, stabilized_hint)
+                    self.nr_orders_created += 1
+
                 case 'cancel':
                     await self.cancel_orders(wave_id, wave_frame)
+                    if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
+                        logger.critical('max nr of orders created already, exiting')
+                        quit(1)
 
     async def create_orders(self, wave_id, wave_frame, stabilized_hint):
         price_mean = wave_frame['price_mean'][0]
@@ -70,46 +74,25 @@ class OrderMaker:
             logger.error('not creating order, no clear direction received ({})', stabilized_hint)
             return
 
-        buy_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_usd(price_mean), 8)
-        sell_amount = round(base_amount + 0.0015 * self.balance_watcher.percentage_btc(price_mean), 8)
+        buy_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_usd(price_mean), 6))
+        sell_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_btc(price_mean), 2))
 
         logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
         new_orders = []
         match stabilized_hint:
             case 'min':
-                await self.send_buy_order(wave_id, buy_amount, low_price, new_orders)
-                await self.send_sell_order(wave_id, sell_amount, high_price, new_orders)
+                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders)
+                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders)
             case 'max':
-                await self.send_buy_order(wave_id, buy_amount, low_price, new_orders)
-                await self.send_sell_order(wave_id, sell_amount, high_price, new_orders)
+                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders)
+                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders)
         self.active_orders[wave_id] = new_orders
-
-    async def send_sell_order(self, wave_id, sell_amount, high_price, new_orders):
-        try:
-            sell_order = await self.exchange.create_order('BTC/USDT', 'limit', 'sell', sell_amount, high_price, {'test': test_mode})
-            logger.success('#{} SELL ORDER PLACED!! wave {} - at price {}', self.nr_orders_created, wave_id, high_price)
-            if test_mode:
-                sell_order['id'] = 17253897423
-            new_orders.append(sell_order)
-        except Exception as e:
-            logger.error(e)
-
-    async def send_buy_order(self, wave_id, buy_amount, low_price, new_orders):
-        try:
-            buy_order = await self.exchange.create_order('BTC/USDT', 'limit', 'buy', buy_amount, low_price, {'test': test_mode})
-            logger.success('#{} BUY ORDER PLACED!! wave {} - at price {}', self.nr_orders_created, wave_id, low_price)
-            if test_mode:
-                buy_order['id'] = 17253897422
-            new_orders.append(buy_order)
-        except Exception as e:
-            logger.error(e)
 
     async def cancel_orders(self, wave_id, wave_frame):
         if wave_id in self.active_orders.keys():
-            clear_orders = self.active_orders.pop(wave_id)
-            logger.success('cancelling potential {} orders in wave {}', len(clear_orders), wave_id)
-            for order in clear_orders:
-                try:
-                    await self.exchange.cancel_order(order['id'], symbol=order['symbol'])
-                except:
-                    pass  # ignore errors on cancelling orders because they might got fulfilled already
+            self.active_orders.pop(wave_id)
+            logger.success('cancelling all orders in wave {}', wave_id)
+            try:
+                await self.connector_wss.cancel_orders(wave_id)
+            except:
+                pass  # ignore errors on cancelling orders because they might got fulfilled already

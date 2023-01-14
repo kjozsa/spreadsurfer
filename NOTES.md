@@ -36,3 +36,10 @@ buy order will succeed, sell order will fail
 
 on wave MIN, price is raising -> noone wants to sell / everyone is buying
 
+# other servers
+We've added more API clusters:
+https://api1.binance.com/api/v3/ping
+https://api2.binance.com/api/v3/ping
+https://api3.binance.com/api/v3/ping
+
+in addition to https://api.binance.com/api/v3/ping

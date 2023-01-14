@@ -13,6 +13,7 @@ class TradeWatcher:
     def __init__(self, exchange: ccxt.Exchange, wave_events_queue: asyncio.Queue):
         self.exchange = exchange
         self.wave_events_queue = wave_events_queue
+        self.wave_running = False
 
     async def start(self):
         df = pd.DataFrame(columns=['ms', 'nr_trades', 'price', 'amount'])
@@ -38,10 +39,12 @@ class TradeWatcher:
             amount_mean = df["amount"].mean()
 
             # analyze wave start/end, collect wave data
-            if last_trade_count == 0 and nr_trades > 0:
+            if nr_trades > 0 and not self.wave_running:
+                self.wave_running = True
                 await self.wave_events_queue.put(("start", None))
 
             if nr_trades < last_trade_count:
+                self.wave_running = False
                 await self.wave_events_queue.put(("end", df))
             else:
                 logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {amount_mean}')
