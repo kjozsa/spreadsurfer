@@ -30,3 +30,9 @@ sell amount = 0.001 + 0.3 * 0.001 == 0.0013
 50 usd
 usd rate == 0.3
 
+# buy/sell
+on wave MAX, price is dropping -> noone wants to buy / everyone is selling
+buy order will succeed, sell order will fail
+
+on wave MIN, price is raising -> noone wants to sell / everyone is buying
+
