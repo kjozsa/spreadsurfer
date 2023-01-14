@@ -47,14 +47,14 @@ class BinanceWebsocketConnector:
         except Exception as e:
             logger.error(e)
 
-    async def send_order(self, order_id, price, amount, buy, recv_window=500):
+    async def send_order(self, order_id, price, amount, buy):
         buy_sell = 'BUY' if buy else 'SELL'
         params = {
             'apiKey': api_key,
             'newOrderRespType': 'ACK',
             'price': price,
             'quantity': amount,
-            'recvWindow': recv_window,
+            # 'recvWindow': recv_window,
             'side': buy_sell,
             'symbol': 'BTCUSDT',
             'timeInForce': 'GTC',
