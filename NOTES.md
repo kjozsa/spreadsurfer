@@ -31,10 +31,12 @@ sell amount = 0.001 + 0.3 * 0.001 == 0.0013
 usd rate == 0.3
 
 # buy/sell
-on wave MAX, price is dropping -> noone wants to buy / everyone is selling
-buy order will succeed, sell order will fail
-
 on wave MIN, price is raising -> noone wants to sell / everyone is buying
+sell order will succeed, buy order needs to be MARKET
+
+on wave MAX, price is dropping -> noone wants to buy / everyone is selling
+buy order will succeed, sell order will fail (create sell MARKET order instead?)
+
 
 # other servers
 We've added more API clusters:

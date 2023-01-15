@@ -84,12 +84,12 @@ class OrderMaker:
         logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
         new_orders = []
         match stabilized_hint:
-            case 'min':
-                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders)
-                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders)
-            case 'max':
-                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders)
-                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders)
+            case 'min':  # price is raising
+                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders, limit=True)
+                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders, limit=False)
+            case 'max':  # price is dropping
+                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders, limit=True)
+                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders, limit=False)
         self.active_orders[wave_id] = new_orders
 
     async def cancel_orders(self, wave_id, wave_frame):

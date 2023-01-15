@@ -31,23 +31,25 @@ class BinanceWebsocketConnector:
         loop = asyncio.get_running_loop()
         loop.add_signal_handler(signal.SIGTERM, loop.create_task, self.websocket.close())
 
-    async def send_buy_order(self, wave_id, price, amount, new_orders):
+    async def send_buy_order(self, wave_id, price, amount, new_orders, limit):
+        limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order = await self.send_order('B-' + wave_id, price, amount, True)
-            logger.success('BUY ORDER PLACED!! wave {} - at price {}', wave_id, price)
+            order = await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit)
+            logger.success('{} BUY ORDER PLACED!! wave {} - at price {}', limit_str, wave_id, price if limit else '?')
             new_orders.append(order)
         except Exception as e:
             logger.error(e)
 
-    async def send_sell_order(self, wave_id, price, amount, new_orders):
+    async def send_sell_order(self, wave_id, price, amount, new_orders, limit):
+        limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order = await self.send_order('S-' + wave_id, price, amount, False)
-            logger.success('SELL ORDER PLACED!! wave {} - at price {}', wave_id, price)
+            order = await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit)
+            logger.success('{} SELL ORDER PLACED!! wave {} - at price {}', limit_str, wave_id, price if limit else '?')
             new_orders.append(order)
         except Exception as e:
             logger.error(e)
 
-    async def send_order(self, order_id, price, amount, buy):
+    async def send_order(self, order_id, price, amount, buy, limit):
         buy_sell = 'BUY' if buy else 'SELL'
         params = {
             'apiKey': api_key,
@@ -59,8 +61,11 @@ class BinanceWebsocketConnector:
             'symbol': 'BTCUSDT',
             'timeInForce': 'GTC',
             'timestamp': math.floor(datetime.now().timestamp() * 1000),
-            'type': 'LIMIT',
+            'type': 'LIMIT' if limit else 'MARKET'
         }
+        if not limit:  # market order has no price
+            params.pop('price')
+
         request = self.sign(params, order_id, 'order.place')
         if not test_mode:
             await self.websocket.send(request)
