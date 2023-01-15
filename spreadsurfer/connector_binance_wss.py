@@ -63,7 +63,7 @@ class BinanceWebsocketConnector:
             'timestamp': math.floor(datetime.now().timestamp() * 1000),
             'type': 'LIMIT' if limit else 'MARKET'
         }
-        if not limit:  # market order has no price
+        if not limit:  # market order has no price or timeInForce field
             params.pop('price')
             params.pop('timeInForce')
 
