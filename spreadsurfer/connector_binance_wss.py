@@ -65,6 +65,7 @@ class BinanceWebsocketConnector:
         }
         if not limit:  # market order has no price
             params.pop('price')
+            params.pop('timeInForce')
 
         request = self.sign(params, order_id, 'order.place')
         if not test_mode:
