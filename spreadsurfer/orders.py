@@ -86,10 +86,10 @@ class OrderMaker:
         match stabilized_hint:
             case 'min':  # price is raising
                 await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders, limit=True)
-                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders, limit=False)
+                await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders, limit=True)
             case 'max':  # price is dropping
                 await self.connector_wss.send_buy_order(wave_id, low_price, buy_amount, new_orders, limit=True)
-                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders, limit=False)
+                await self.connector_wss.send_sell_order(wave_id, high_price, sell_amount, new_orders, limit=True)
         self.active_orders[wave_id] = new_orders
 
     async def cancel_orders(self, wave_id, wave_frame):
