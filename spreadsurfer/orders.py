@@ -30,12 +30,12 @@ def scientific_price_calculation(price_mean, price_min, price_max, spread, stabi
     match stabilized_hint:
         case 'min':  # raising price?
             high_price = price_max * (1 + hint_buff_factor)
-            low_price = price_min + aim_above_min
+            low_price = price_mean + aim_above_min
             if low_price >= high_price:
                 low_price = price_min
         case 'max':  # lowering price?
             low_price = price_min * (1 - hint_buff_factor)
-            high_price = price_max - aim_below_max
+            high_price = price_mean - aim_below_max
             if high_price <= low_price:
                 high_price = price_max
     return round(low_price, 2), round(high_price, 2)
