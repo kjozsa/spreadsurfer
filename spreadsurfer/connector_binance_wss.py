@@ -31,20 +31,20 @@ class BinanceWebsocketConnector:
         loop = asyncio.get_running_loop()
         loop.add_signal_handler(signal.SIGTERM, loop.create_task, self.websocket.close())
 
-    async def send_buy_order(self, wave_id, price, amount, new_orders, limit):
+    async def send_buy_order(self, order_nr, wave_id, price, amount, new_orders, limit):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
             order = await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit)
-            logger.success('{} BUY ORDER PLACED!! wave {} - at price {}', limit_str, wave_id, price if limit else '?')
+            logger.success('#{}. {} BUY ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
             new_orders.append(order)
         except Exception as e:
             logger.error(e)
 
-    async def send_sell_order(self, wave_id, price, amount, new_orders, limit):
+    async def send_sell_order(self, order_nr, wave_id, price, amount, new_orders, limit):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
             order = await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit)
-            logger.success('{} SELL ORDER PLACED!! wave {} - at price {}', limit_str, wave_id, price if limit else '?')
+            logger.success('#{}. {} SELL ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
             new_orders.append(order)
         except Exception as e:
             logger.error(e)

@@ -33,6 +33,7 @@ class TradeWatcher:
             # collect mean/min/max/spread
             nr_trades = len(df)  # nr of trades in defined timewindow
             price_mean = df['price'].mean()
+            price_last = trades[-1]['price']
             price_min = df['price'].min()
             price_max = df['price'].max()
             spread = price_max - price_min
@@ -47,7 +48,7 @@ class TradeWatcher:
                 self.wave_running = False
                 await self.wave_events_queue.put(("end", df))
             else:
-                logger.debug(f'{nr_trades} trades, mean price: {price_mean}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {amount_mean}')
+                logger.debug(f'{nr_trades} trades, last price: {price_last}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {amount_mean}')
                 wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
                 await self.wave_events_queue.put(("frame", wave_frame))
 
