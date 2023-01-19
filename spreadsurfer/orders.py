@@ -14,7 +14,6 @@ from spreadsurfer.connector_binance_wss import BinanceWebsocketConnector
 order_config = json.load(open('config.json'))['orders']
 logger.info('order config: {}', order_config)
 
-test_mode = order_config['test_mode']
 max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
 base_amount = order_config['base_amount']
@@ -23,7 +22,7 @@ aim_above_min = order_config['aim_above_min']
 aim_below_max = aim_above_min
 
 
-def scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint):
+def scientific_price_calculation(price_min, price_max, spread, stabilized_hint):
     low_price = None
     high_price = None
 
@@ -73,7 +72,7 @@ class OrderMaker:
         price_max = wave_frame['price_max'][0]
         spread = wave_frame['spread'][0]
 
-        low_price, high_price = scientific_price_calculation(price_mean, price_min, price_max, spread, stabilized_hint)
+        low_price, high_price = scientific_price_calculation(price_min, price_max, spread, stabilized_hint)
         if low_price is None or high_price is None:
             logger.error('not creating order, no clear direction received ({})', stabilized_hint)
             return

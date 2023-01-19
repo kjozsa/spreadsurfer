@@ -80,6 +80,9 @@ class BinanceWebsocketConnector:
         return response
 
     async def cancel_orders(self, wave_id):
+        if test_mode:
+            return
+
         params = {
             'apiKey': api_key,
             'symbol': 'BTCUSDT',

@@ -38,7 +38,7 @@ class WaveHandler:
                 case 'frame':
                     await self.receive_frame(wave_frame)
                 case 'end':
-                    await self.end_wave(wave_frame)
+                    await self.end_wave(self.wave.tail(1))
                 case _:
                     raise AssertionError(f'invalid event received: {event_name}')
 
@@ -59,7 +59,8 @@ class WaveHandler:
         wave_length_ms = timedelta_ms(now(), self.wave_start)
         logger.warning('ending wave {}, wave length was {} ms', self.wave_id, wave_length_ms)
 
-        await self.datacollect_queue.put((self.wave_stabilized_at_ms, self.wave_stabilized_frame, wave_length_ms, wave_end_frame))
+        if self.wave_stabilized:
+            await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, self.wave_stabilized_frame, wave_length_ms, wave_end_frame))
 
         self.wave_stabilized = None
         self.wave_stabilized_at_ms = None

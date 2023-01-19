@@ -41,15 +41,20 @@ class TradeWatcher:
 
             # analyze wave start/end, collect wave data
             if nr_trades > 0 and not self.wave_running:
+                # start wave
                 self.wave_running = True
                 await self.wave_events_queue.put(("start", None))
-
-            if nr_trades < last_trade_count:
-                self.wave_running = False
-                await self.wave_events_queue.put(("end", df))
             else:
-                logger.debug(f'{nr_trades} trades, last price: {price_last}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {amount_mean}')
                 wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
-                await self.wave_events_queue.put(("frame", wave_frame))
+
+                if nr_trades < last_trade_count:
+                    # end wave
+                    self.wave_running = False
+                    await self.wave_events_queue.put(("end", None))
+                else:
+                    # mid wave
+                    logger.debug(f'{nr_trades} trades, last price: {price_last}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {amount_mean}')
+                    wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
+                    await self.wave_events_queue.put(("frame", wave_frame))
 
             last_trade_count = nr_trades

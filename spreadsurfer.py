@@ -5,6 +5,7 @@ from loguru import logger
 # logger.remove()
 # logger.add(sys.stdout, level="INFO")
 logger.level("magenta", color='<magenta>', no=25)
+logger.level("data", color='<light-blue>', no=25)
 logger.add("console.log", rotation="500 MB")
 # sys.tracebacklimit = 1
 
