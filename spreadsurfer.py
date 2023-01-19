@@ -4,7 +4,7 @@ from spreadsurfer import *
 import asyncio
 from loguru import logger
 
-sys.tracebacklimit = 1
+sys.tracebacklimit = 2
 
 logger.remove()
 logger.add(sys.stdout, level=35)

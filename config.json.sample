@@ -22,5 +22,10 @@
     "base_amount" : 0.0015,
     "hint_buff_factor": 0.000070,
     "aim_above_min": 0.1
+  },
+  "datacollect": {
+    "dump_batch_size": 2,
+    "data_files_path": "./data/",
+    "round_prices": 3
   }
 }
