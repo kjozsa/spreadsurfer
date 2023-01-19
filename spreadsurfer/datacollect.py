@@ -1,3 +1,6 @@
+import signal
+
+import asyncio
 import json
 import os
 from datetime import datetime
@@ -25,6 +28,9 @@ class DataCollector:
         self.df = pd.DataFrame(columns=['stabilized_at_ms', 'stabilized_nr_trades', 'stabilized_amount_mean', 'stabilized_amount_max', 'stabilized_spread', 'wave_direction', 'last_price_delta_since_stabilized'])
 
     async def start(self):
+        loop = asyncio.get_running_loop()
+        loop.add_signal_handler(signal.SIGTERM, loop.create_task, self.dump_data_to_file())
+
         while True:
             (wave_stabilized, stabilized_ms, stabilized_frame, end_ms, end_frame) = await self.datacollect_queue.get()
 
@@ -45,8 +51,11 @@ class DataCollector:
             self.df = pd.concat([self.df, pd.DataFrame(fresh_data)])
 
             if len(self.df) >= dump_batch_size:
-                logger.log('data', '## dumping data to parquet file')
-                save_df = self.df
-                self.df = self.df.head(0)
-                append = os.path.isfile(self.data_file)
-                save_df.to_parquet(self.data_file, engine='fastparquet', append=append)
+                self.dump_data_to_file()
+
+    def dump_data_to_file(self):
+        logger.log('data', '## dumping data to parquet file')
+        save_df = self.df
+        self.df = self.df.head(0)
+        append = os.path.isfile(self.data_file)
+        save_df.to_parquet(self.data_file, engine='fastparquet', append=append)
