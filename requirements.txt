@@ -5,3 +5,5 @@ shortuuid
 bpython
 asyncio
 websockets
+fastparquet
+

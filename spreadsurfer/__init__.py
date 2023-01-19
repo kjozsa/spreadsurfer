@@ -5,3 +5,4 @@ from .waves import WaveHandler
 from .timeutils import *
 from .connector import connect_exchange
 from .orders import OrderMaker
+from .datacollect import DataCollector

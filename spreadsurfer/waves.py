@@ -16,17 +16,18 @@ max_delta_ms_to_create_order = wave_config['max_delta_ms_to_create_order']
 
 
 class WaveHandler:
-    def __init__(self, wave_events_queue: asyncio.Queue, orders_queue: asyncio.Queue):
+    def __init__(self, wave_events_queue: asyncio.Queue, orders_queue: asyncio.Queue, datacollect_queue: asyncio.Queue):
         self.wave_events_queue = wave_events_queue
         self.orders_queue = orders_queue
+        self.datacollect_queue = datacollect_queue
 
         self.wave_start = None
         self.wave = pd.DataFrame(columns=['ms' 'price', 'amount'])
         self.wave_id = None
         self.wave_stabilized = None
+        self.wave_stabilized_at_ms = None
         self.wave_stabilized_frame = None
         self.wave_running = True
-        self.wave_length_ms = None
 
     async def start(self):
         while True:
@@ -52,13 +53,16 @@ class WaveHandler:
         self.wave = pd.concat([self.wave, wave_frame])
         await self.check_stabilized(wave_frame)
 
-    async def end_wave(self, wave_frame):
+    async def end_wave(self, wave_end_frame):
         last_wave = self.wave.tail(1)
         await self.orders_queue.put((self.wave_id, 'cancel', last_wave, None))
-        self.wave_length_ms = timedelta_ms(now(), self.wave_start)
-        logger.warning('ending wave {}, wave length was {} ms', self.wave_id, self.wave_length_ms)
+        wave_length_ms = timedelta_ms(now(), self.wave_start)
+        logger.warning('ending wave {}, wave length was {} ms', self.wave_id, wave_length_ms)
+
+        await self.datacollect_queue.put((self.wave_stabilized_at_ms, self.wave_stabilized_frame, wave_length_ms, wave_end_frame))
 
         self.wave_stabilized = None
+        self.wave_stabilized_at_ms = None
         self.wave_stabilized_frame = None
         self.wave_running = False
 
@@ -87,6 +91,7 @@ class WaveHandler:
 
     async def stabilized(self, min_or_max, delta_ms, wave_frame):
         self.wave_stabilized = min_or_max
+        self.wave_stabilized_at_ms = delta_ms
         logger.info('wave {} stabilized in {} ms', min_or_max.upper(), delta_ms)
         self.wave_stabilized_frame = wave_frame
         await self.orders_queue.put((self.wave_id, 'create', wave_frame, min_or_max))
