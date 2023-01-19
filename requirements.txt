@@ -6,4 +6,5 @@ bpython
 asyncio
 websockets
 fastparquet
+scikit-learn
 
