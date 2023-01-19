@@ -14,6 +14,7 @@ from spreadsurfer.connector_binance_wss import BinanceWebsocketConnector
 order_config = json.load(open('config.json'))['orders']
 logger.info('order config: {}', order_config)
 
+orders_disabled = order_config['orders_disabled']
 max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
 base_amount = order_config['base_amount']
@@ -55,16 +56,17 @@ class OrderMaker:
 
         while True:
             (wave_id, event_name, wave_frame, stabilized_hint) = await self.orders_queue.get()
-            match event_name:
-                case 'create':
-                    await self.create_orders(wave_id, wave_frame, stabilized_hint)
-                    self.nr_orders_created += 1
+            if not orders_disabled:
+                match event_name:
+                    case 'create':
+                        await self.create_orders(wave_id, wave_frame, stabilized_hint)
+                        self.nr_orders_created += 1
 
-                case 'cancel':
-                    await self.cancel_orders(wave_id, wave_frame)
-                    if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
-                        logger.critical('max nr of orders created already, exiting')
-                        quit(1)
+                    case 'cancel':
+                        await self.cancel_orders(wave_id, wave_frame)
+                        if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
+                            logger.critical('max nr of orders created already, exiting')
+                            quit(1)
 
     async def create_orders(self, wave_id, wave_frame, stabilized_hint):
         price_mean = wave_frame['price_mean'][0]

@@ -15,6 +15,7 @@
     "max_delta_ms_to_create_order": 500
   },
   "orders": {
+    "disabled": true,
     "test_mode": true,
     "max_nr_orders_limited": true,
     "max_nr_orders_created": 50,

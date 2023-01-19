@@ -14,9 +14,9 @@ class DataCollector:
             (wave_stabilized, stabilized_ms, stabilized_frame, end_ms, end_frame) = await self.datacollect_queue.get()
 
             if wave_stabilized == 'min':
-                last_price_delta = end_frame['price_max'].max() - stabilized_frame['price_max'].max()
+                last_price_delta = round(end_frame['price_max'].max() - stabilized_frame['price_max'].max(), 3)
             else:
-                last_price_delta = end_frame['price_min'].min() - stabilized_frame['price_min'].min()
+                last_price_delta = round(end_frame['price_min'].min() - stabilized_frame['price_min'].min(), 3)
 
             fresh_data = [{
                 'stabilized_at_ms': stabilized_ms,
