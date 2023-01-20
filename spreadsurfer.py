@@ -4,10 +4,11 @@ from spreadsurfer import *
 import asyncio
 from loguru import logger
 
-sys.tracebacklimit = 2
+sys.tracebacklimit = 3
 
 logger.remove()
-logger.add(sys.stdout, level=35)
+# logger.add(sys.stdout, level=35)
+logger.add(sys.stdout)
 
 logger.level("magenta", color='<magenta>', no=15)
 logger.level("data", color='<light-blue>', no=35)
