@@ -10,3 +10,7 @@
 
 # v1.3
 - websocket order placement and cancel
+
+# v1.4
+- collect trade waves data for ML analysis
+

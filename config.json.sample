@@ -11,7 +11,8 @@
     "min_length": 6,
     "investigate_length": 5,
     "stabilized_threshold": 0.01,
-    "max_delta_ms_to_create_order": 500
+    "max_delta_ms_to_create_order": 500,
+    "collect_last_n_wave": 6
   },
   "orders": {
     "disabled": true,

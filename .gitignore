@@ -4,6 +4,7 @@ __pycache__/
 *.log
 *.sav
 data/*
+data-obsolete/*
 models/*
 
 
