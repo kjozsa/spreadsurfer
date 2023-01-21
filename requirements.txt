@@ -7,4 +7,5 @@ asyncio
 websockets
 fastparquet
 scikit-learn
+catboost
 

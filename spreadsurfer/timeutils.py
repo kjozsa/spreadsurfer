@@ -7,3 +7,7 @@ def now():
 
 def timedelta_ms(start, end):
     return round(abs((end - start).total_seconds()) * 1000)
+
+
+def now_isoformat():
+    return datetime.utcnow().replace(microsecond=0).isoformat()

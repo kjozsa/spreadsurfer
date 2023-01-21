@@ -10,6 +10,8 @@ import pandas as pd
 import atexit
 from loguru import logger
 
+from spreadsurfer import now_isoformat
+
 datacollect_config = json.load(open('config.json'))['datacollect']
 
 dump_batch_size = datacollect_config['dump_batch_size']
@@ -26,7 +28,7 @@ class DataCollector:
         logger.log('data', 'datacollect config: {}', datacollect_config)
 
         os.makedirs(data_files_path, exist_ok=True)
-        filename = f'{datetime.utcnow().replace(microsecond=0).isoformat()}.parquet'
+        filename = f'{now_isoformat()}.parquet'
         self.data_file = os.path.join(data_files_path, filename)
         logger.log('data', 'writing output to {}', self.data_file)
 
