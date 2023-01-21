@@ -64,7 +64,7 @@ class WaveHandler:
 
         if self.wave_stabilized and not self.wave_destabilized:
             end = self.wave_stabilized_at_frame
-            start = end-collect_last_n_wave
+            start = end - collect_last_n_wave
             frames = self.wave[start:end]
             logger.warning('$$$$$$ sending {} frames', len(frames))
             await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, frames, wave_length_ms, wave_end_frame))
@@ -107,4 +107,34 @@ class WaveHandler:
         self.wave_stabilized_at_frame = len(self.wave)
         logger.info('wave {} stabilized in {} ms', min_or_max.upper(), delta_ms)
         self.wave_stabilized_frame = wave_frame
-        await self.orders_queue.put((self.wave_id, 'create', wave_frame, min_or_max))
+
+        if self.shall_create_order(wave_frame):
+            await self.orders_queue.put((self.wave_id, 'create', wave_frame, min_or_max))
+
+    def shall_create_order(self, stabilized_frame):
+        create_order = True
+        if stabilized_frame['spread'].mean() < 0.2:
+            logger.debug('skipping order, stabilized spread is too small: {}', stabilized_frame['spread'])
+            create_order = False
+
+        elif stabilized_frame['spread'].mean() > 10:
+            logger.debug('skipping order, stabilized spread is too large: {}', stabilized_frame['spread'])
+            create_order = False
+
+        else:
+            start_frame = self.wave.head(1)
+            if self.wave_stabilized == 'min':
+                stabilized_price = stabilized_frame['price_max'].max()
+                start_delta = stabilized_price - start_frame['price_max'].max()
+
+            elif self.wave_stabilized == 'max':
+                stabilized_price = stabilized_frame['price_min'].min()
+                start_delta = start_frame['price_min'].min() - stabilized_price
+            else:
+                raise AssertionError(f'wave stabilized is expected to be min or max, not {self.wave_stabilized}')
+
+            if start_delta > 4:
+                logger.debug('skipping order, stabilized price delta from start_frame is already too high')
+                create_order = False
+
+        return create_order
