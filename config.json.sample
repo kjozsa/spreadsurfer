@@ -24,6 +24,7 @@
     "aim_above_min": 0.1
   },
   "datacollect": {
+    "datacollect_disabled": false,
     "dump_batch_size": 2,
     "data_files_path": "./data/",
     "round_prices": 3

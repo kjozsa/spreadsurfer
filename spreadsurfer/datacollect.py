@@ -17,6 +17,7 @@ datacollect_config = json.load(open('config.json'))['datacollect']
 dump_batch_size = datacollect_config['dump_batch_size']
 data_files_path = datacollect_config['data_files_path']
 round_prices = datacollect_config['round_prices']
+datacollect_disabled = datacollect_config['datacollect_disabled']
 
 
 def r(num):
@@ -27,10 +28,11 @@ class DataCollector:
     def __init__(self, datacollect_queue):
         logger.log('data', 'datacollect config: {}', datacollect_config)
 
-        os.makedirs(data_files_path, exist_ok=True)
-        filename = f'{now_isoformat()}.parquet'
-        self.data_file = os.path.join(data_files_path, filename)
-        logger.log('data', 'writing output to {}', self.data_file)
+        if not datacollect_disabled:
+            os.makedirs(data_files_path, exist_ok=True)
+            filename = f'{now_isoformat()}.parquet'
+            self.data_file = os.path.join(data_files_path, filename)
+            logger.log('data', 'writing output to {}', self.data_file)
 
         self.datacollect_queue = datacollect_queue
         self.df = pd.DataFrame(columns=[
@@ -63,10 +65,15 @@ class DataCollector:
         ])
 
     async def start(self):
-        atexit.register(self.dump_data_to_file)
+        if not datacollect_disabled:
+            atexit.register(self.dump_data_to_file)
 
         while True:
             (wave_stabilized, stabilized_ms, frames, end_ms, end_frame) = await self.datacollect_queue.get()
+
+            if datacollect_disabled:
+                continue
+
             stabilized_frame = frames.tail(1)
             if wave_stabilized == 'min':
                 raising = True
