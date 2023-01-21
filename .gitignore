@@ -6,6 +6,7 @@ __pycache__/
 data/*
 data-obsolete/*
 models/*
+catboost_info/
 
 
 
