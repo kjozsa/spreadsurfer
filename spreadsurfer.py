@@ -14,6 +14,7 @@ logger.add(sys.stdout)
 logger.level("magenta", color='<magenta>', no=15)
 logger.level("data", color='<light-blue>', no=35)
 logger.level("ml", color='<light-cyan>', no=37)
+logger.level("bookkeeper", color='<light-green><bold>', no=37)
 logger.add("console.log", rotation="500 MB")
 
 

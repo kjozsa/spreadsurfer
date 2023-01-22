@@ -77,7 +77,7 @@ class BinanceWebsocketConnector:
                 raise Exception('order ' + order_id + ' failed to create: ' + response)
         else:
             logger.error('TEST order created: {}', request)
-            response = {'id': f'test{randint(1000000, 999999)}'}
+            response = {'id': f'test{randint(1000000, 9999999)}'}
         return response
 
     async def cancel_orders(self, wave_id):
