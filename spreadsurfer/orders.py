@@ -27,7 +27,8 @@ class OrderMaker:
         self.orders_queue = orders_queue
         self.balance_watcher = balance_watcher
 
-        self.active_orders = {}
+        self.wave_orders = {}  # <wave_id, list<order>>
+        self.active_orders = {}  # <order_id, order>
         self.nr_orders_created = 0
         self.connector_wss = BinanceWebsocketConnector()
         self.price_engine = PriceEngine()
@@ -54,13 +55,10 @@ class OrderMaker:
     async def create_orders(self, wave_id, frames, stabilized_hint, stabilized_at_ms):
         stabilized_frame = frames.tail(1)
         price_mean = stabilized_frame['price_mean'][0]
-        price_min = stabilized_frame['price_min'][0]
-        price_max = stabilized_frame['price_max'][0]
-        spread = stabilized_frame['spread'][0]
 
         low_price, high_price = await self.price_engine.predict(stabilized_hint, frames, stabilized_at_ms)
         if low_price is None or high_price is None:
-            logger.error('not creating order, no clear direction received ({})', stabilized_hint)
+            logger.critical('not creating order, no clear direction received ({})', stabilized_hint)
             return
 
         buy_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_usd(price_mean), 5))
@@ -75,11 +73,13 @@ class OrderMaker:
             case 'max':  # price is dropping
                 await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, new_orders, limit=True)
                 await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, new_orders, limit=True)
-        self.active_orders[wave_id] = new_orders
+        self.wave_orders[wave_id] = new_orders
+        for order in new_orders:
+            self.active_orders[order['id']] = order
 
     async def cancel_orders(self, wave_id):
-        if wave_id in self.active_orders.keys():
-            self.active_orders.pop(wave_id)
+        if wave_id in self.wave_orders.keys():
+            self.wave_orders.pop(wave_id)
             logger.success('cancelling all orders in wave {}', wave_id)
             try:
                 await self.connector_wss.cancel_orders(wave_id)
