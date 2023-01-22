@@ -75,7 +75,7 @@ class WaveHandler:
         end = self.wave_stabilized_at_frame
         start = end - collect_last_n_wave
         frames = self.wave[start:end]
-        logger.warning('$$$$$$ sending {} frames', len(frames))
+        logger.trace('$$$$$$ sending {} frames', len(frames))
         await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, frames, wave_length_ms, wave_end_frame))
 
     async def check_stabilized(self, wave_frame):
@@ -117,15 +117,15 @@ class WaveHandler:
     def shall_create_order(self, stabilized_frame, delta_ms):
         create_order = True
         if delta_ms > max_delta_ms_to_create_order:
-            logger.trace('delta_ms is {}, making no order in this wave', delta_ms)
+            logger.log('magenta', 'delta_ms {} is larger than {}, making no order in this wave', delta_ms, max_delta_ms_to_create_order)
             create_order = False
 
         elif stabilized_frame['spread'].mean() < 0.2:
-            logger.debug('skipping order, stabilized spread is too small: {}', stabilized_frame['spread'])
+            logger.log('magenta', 'skipping order, stabilized spread is too small: {}', stabilized_frame['spread'])
             create_order = False
 
         elif stabilized_frame['spread'].mean() > 10:
-            logger.debug('skipping order, stabilized spread is too large: {}', stabilized_frame['spread'])
+            logger.log('magenta', 'skipping order, stabilized spread is too large: {}', stabilized_frame['spread'])
             create_order = False
 
         else:
@@ -141,7 +141,7 @@ class WaveHandler:
                 raise AssertionError(f'wave stabilized is expected to be min or max, not {self.wave_stabilized}')
 
             if start_delta > 4:
-                logger.debug('skipping order, stabilized price delta from start_frame is already too high')
+                logger.log('magenta', 'skipping order, stabilized price delta from start_frame is already too high')
                 create_order = False
 
         return create_order
