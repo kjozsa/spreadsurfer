@@ -6,6 +6,7 @@ from loguru import logger
 
 from spreadsurfer import *
 from spreadsurfer.connector_binance_wss import BinanceWebsocketConnector
+from spreadsurfer.price_engine import PriceEngine
 
 # enable ccxt debug logging:
 # import logging
@@ -23,24 +24,6 @@ aim_above_min = order_config['aim_above_min']
 aim_below_max = aim_above_min
 
 
-def scientific_price_calculation(price_min, price_max, spread, stabilized_hint):
-    low_price = None
-    high_price = None
-
-    match stabilized_hint:
-        case 'min':  # raising price?
-            low_price = price_max + aim_above_min
-            high_price = low_price * (1 + hint_buff_factor)
-            if low_price >= high_price:
-                low_price = price_min
-        case 'max':  # lowering price?
-            high_price = price_min - aim_below_max
-            low_price = high_price * (1 - hint_buff_factor)
-            if high_price <= low_price:
-                high_price = price_max
-    return round(low_price, 2), round(high_price, 2)
-
-
 class OrderMaker:
     def __init__(self, exchange: ccxt.Exchange, orders_queue: asyncio.Queue, balance_watcher: BalanceWatcher):
         self.exchange = exchange
@@ -50,31 +33,35 @@ class OrderMaker:
         self.active_orders = {}
         self.nr_orders_created = 0
         self.connector_wss = BinanceWebsocketConnector()
+        self.price_engine = PriceEngine()
 
     async def start(self):
         await self.connector_wss.start()
 
         while True:
-            (wave_id, event_name, wave_frame, stabilized_hint) = await self.orders_queue.get()
-            if not orders_disabled:
-                match event_name:
-                    case 'create':
-                        await self.create_orders(wave_id, wave_frame, stabilized_hint)
-                        self.nr_orders_created += 1
+            (wave_id, event_name, frames, stabilized_hint, stabilized_at_ms) = await self.orders_queue.get()
+            if orders_disabled:
+                continue
 
-                    case 'cancel':
-                        await self.cancel_orders(wave_id, wave_frame)
-                        if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
-                            logger.critical('max nr of orders created already, exiting')
-                            quit(1)
+            match event_name:
+                case 'create':
+                    await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms)
+                    self.nr_orders_created += 1
 
-    async def create_orders(self, wave_id, wave_frame, stabilized_hint):
-        price_mean = wave_frame['price_mean'][0]
-        price_min = wave_frame['price_min'][0]
-        price_max = wave_frame['price_max'][0]
-        spread = wave_frame['spread'][0]
+                case 'cancel':
+                    await self.cancel_orders(wave_id)
+                    if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
+                        logger.critical('max nr of orders created already, exiting')
+                        quit(1)
 
-        low_price, high_price = scientific_price_calculation(price_min, price_max, spread, stabilized_hint)
+    async def create_orders(self, wave_id, frames, stabilized_hint, stabilized_at_ms):
+        stabilized_frame = frames.tail(1)
+        price_mean = stabilized_frame['price_mean'][0]
+        price_min = stabilized_frame['price_min'][0]
+        price_max = stabilized_frame['price_max'][0]
+        spread = stabilized_frame['spread'][0]
+
+        low_price, high_price = await self.price_engine.predict(stabilized_hint, frames, stabilized_at_ms)
         if low_price is None or high_price is None:
             logger.error('not creating order, no clear direction received ({})', stabilized_hint)
             return
@@ -93,7 +80,7 @@ class OrderMaker:
                 await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, new_orders, limit=True)
         self.active_orders[wave_id] = new_orders
 
-    async def cancel_orders(self, wave_id, wave_frame):
+    async def cancel_orders(self, wave_id):
         if wave_id in self.active_orders.keys():
             self.active_orders.pop(wave_id)
             logger.success('cancelling all orders in wave {}', wave_id)

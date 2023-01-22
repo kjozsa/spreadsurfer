@@ -74,41 +74,43 @@ class DataCollector:
             if datacollect_disabled:
                 continue
 
-            stabilized_frame = frames.tail(1)
-            if wave_stabilized == 'min':
-                raising = True
-                stabilized_price = stabilized_frame['price_max'].max()
-                last_price_delta = r(end_frame['price_max'].max() - stabilized_price)
-            else:
-                raising = False
-                stabilized_price = stabilized_frame['price_min'].min()
-                last_price_delta = r(end_frame['price_min'].min() - stabilized_price)
-
-            frames_data_list = [{
-                f'{i}_nr_trades': frame['nr_trades'],
-                f'{i}_amount_mean': r(frame['amount_mean'].mean()),
-                f'{i}_price_delta': r(stabilized_price - frame['price_max'].max()) if raising else r(frame['price_min'].min() - stabilized_price),
-                f'{i}_spread': r(frame['spread'].max()),
-            } for i, frame in enumerate([frames.iloc[i] for i in range(len(frames) - 1)])]
-
-            frames_data = {k: v for obj in frames_data_list for (k, v) in obj.items()}
-
-            stabilized_data = {
-                'stabilized_at_ms': stabilized_ms,
-                'stabilized_nr_trades': stabilized_frame['nr_trades'].max(),
-                'stabilized_amount_mean': r(stabilized_frame['amount_mean'].mean()),
-                'stabilized_spread': r(stabilized_frame['spread'].max()),
-                'wave_direction': wave_stabilized,
-                'last_price_delta_since_stabilized': last_price_delta
-            }
-
-            fresh_data = dict(sorted(frames_data.items() | stabilized_data.items()))
+            frames_data, stabilized_data, stabilized_price = await self.collect_wave_data(frames, stabilized_ms, wave_stabilized)
+            last_price_delta = r(end_frame['price_max'].max() - stabilized_price) if wave_stabilized == 'min' else r(end_frame['price_min'].min() - stabilized_price)
+            last_price = {'last_price_delta_since_stabilized': last_price_delta}
+            fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | last_price.items()))
 
             logger.log('data', 'wave collected: {}', fresh_data)
             self.df = pd.concat([self.df, pd.DataFrame([fresh_data])])
 
             if len(self.df) >= dump_batch_size:
                 self.dump_data_to_file()
+
+    @staticmethod
+    async def collect_wave_data(frames, stabilized_ms, wave_stabilized):
+        stabilized_frame = frames.tail(1)
+        if wave_stabilized == 'min':
+            raising = True
+            stabilized_price = stabilized_frame['price_max'].max()
+        else:
+            raising = False
+            stabilized_price = stabilized_frame['price_min'].min()
+
+        frames_data_list = [{
+            f'{i}_nr_trades': frame['nr_trades'],
+            f'{i}_amount_mean': r(frame['amount_mean'].mean()),
+            f'{i}_price_delta': r(stabilized_price - frame['price_max'].max()) if raising else r(frame['price_min'].min() - stabilized_price),
+            f'{i}_spread': r(frame['spread'].max()),
+        } for i, frame in enumerate([frames.iloc[i] for i in range(len(frames) - 1)])]
+        frames_data = {k: v for obj in frames_data_list for (k, v) in obj.items()}
+
+        stabilized_data = {
+            'stabilized_at_ms': stabilized_ms,
+            'stabilized_nr_trades': stabilized_frame['nr_trades'].max(),
+            'stabilized_amount_mean': r(stabilized_frame['amount_mean'].mean()),
+            'stabilized_spread': r(stabilized_frame['spread'].max()),
+            'wave_direction': wave_stabilized,
+        }
+        return frames_data, stabilized_data, stabilized_price
 
     def dump_data_to_file(self):
         logger.log('data', '## dumping data to parquet file')
