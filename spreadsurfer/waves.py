@@ -140,8 +140,8 @@ class WaveHandler:
             else:
                 raise AssertionError(f'wave stabilized is expected to be min or max, not {self.wave_stabilized}')
 
-            if start_delta > 4:
-                logger.log('magenta', 'skipping order, stabilized price delta from start_frame is already too high')
-                create_order = False
+            # if start_delta > 4:
+            #     logger.log('magenta', 'skipping order, stabilized price delta from start_frame is already too high')
+            #     create_order = False
 
         return create_order

@@ -14,3 +14,9 @@
 # v1.4
 - collect trade waves data for ML analysis
 
+# v1.5
+- ML predicting with catboost
+- restabilizing changing waves
+- datacollect on changing waves
+
+
