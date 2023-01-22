@@ -76,7 +76,7 @@ class OrderMaker:
         self.bookkeeper.save_orders(wave_id, new_orders)
 
     async def cancel_orders(self, wave_id):
-        if self.bookkeeper.remove_orders_from_wave(wave_id):
+        if self.bookkeeper.remove_orders_by_wave(wave_id):
             logger.success('cancelling all orders in wave {}', wave_id)
             try:
                 await self.connector_wss.cancel_orders(wave_id)

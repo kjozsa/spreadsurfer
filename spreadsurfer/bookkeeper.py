@@ -15,7 +15,7 @@ class Bookkeeper:
         for order in new_orders:
             self.active_orders[order['id']] = order
 
-    def remove_orders_from_wave(self, wave_id):
+    def remove_orders_by_wave(self, wave_id):
         logger.error('removing orders from wave {}', wave_id)
         if wave_id in self.wave_orders:
             orders = self.wave_orders.pop(wave_id)
