@@ -11,11 +11,11 @@ def test_add_remove():
     assert len(bookkeeper.wave_orders) == 1
     assert len(bookkeeper.active_orders) == 2
 
-    bookkeeper.remove_orders_by_id('o1')
+    bookkeeper._remove_orders_by_id('o1')
     assert len(bookkeeper.wave_orders) == 1
     assert len(bookkeeper.active_orders) == 1
 
-    bookkeeper.remove_orders_by_id('o2')
+    bookkeeper._remove_orders_by_id('o2')
     bookkeeper.report()
     assert len(bookkeeper.wave_orders) == 0
     assert len(bookkeeper.active_orders) == 0
@@ -28,6 +28,7 @@ def test_add_remove():
     bookkeeper.report()
     assert len(bookkeeper.wave_orders) == 0
     assert len(bookkeeper.active_orders) == 0
+
 
 def test_fulfill_order():
     bookkeeper = Bookkeeper()

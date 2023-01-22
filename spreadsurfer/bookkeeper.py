@@ -19,11 +19,12 @@ class Bookkeeper:
             orders = self.wave_orders.pop(wave_id)
             for order in orders:
                 self.active_orders.pop(order['result']['orderId'])
+            logger.log('bookkeeper', 'cancelled {} orders by wave', len(orders))
             return True
         else:
             return False
 
-    def remove_orders_by_id(self, order_id):
+    def _remove_orders_by_id(self, order_id):
         self.active_orders.pop(order_id)
         for wave_id in list(self.wave_orders.keys()):
             orders = self.wave_orders[wave_id]
@@ -37,7 +38,7 @@ class Bookkeeper:
     def fulfill_order(self, order_id):
         if order_id in self.active_orders:
             logger.log('bookkeeper', '$$$ FULFILLED ORDER {}', order_id)
-            self.remove_orders_by_id(order_id)
+            self._remove_orders_by_id(order_id)
 
     def report(self):
         logger.log('bookkeeper', '{} active_orders, {} wave_orders', len(self.active_orders), len(self.wave_orders))
