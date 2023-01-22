@@ -12,13 +12,13 @@ class Bookkeeper:
     def save_orders(self, wave_id, new_orders):
         self.wave_orders[wave_id] = new_orders
         for order in new_orders:
-            self.active_orders[order['id']] = order
+            self.active_orders[order['result']['orderId']] = order
 
     def remove_orders_by_wave(self, wave_id):
         if wave_id in self.wave_orders:
             orders = self.wave_orders.pop(wave_id)
             for order in orders:
-                self.active_orders.pop(order['id'])
+                self.active_orders.pop(order['result']['orderId'])
             return True
         else:
             return False
@@ -28,7 +28,7 @@ class Bookkeeper:
         for wave_id in list(self.wave_orders.keys()):
             orders = self.wave_orders[wave_id]
             for order in orders:
-                if order_id == order['id']:
+                if order_id == order['result']['orderId']:
                     orders.remove(order)
                     if len(orders) == 0:
                         self.wave_orders.pop(wave_id)
