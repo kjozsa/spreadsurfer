@@ -71,8 +71,8 @@ class BinanceWebsocketConnector:
         request = self.sign(params, order_id, 'order.place')
         if not test_mode:
             await self.websocket.send(request)
-            response = await self.websocket.recv()
-            if json.loads(response)['status'] != 200:
+            response = json.loads(await self.websocket.recv())
+            if response['status'] != 200:
                 logger.error('order request was {} : {}', order_id, request)
                 raise Exception('order ' + order_id + ' failed to create: ' + response)
         else:
@@ -92,8 +92,8 @@ class BinanceWebsocketConnector:
         request = self.sign(params, wave_id, 'openOrders.cancelAll')
         try:
             await self.websocket.send(request)
-            response = await self.websocket.recv()
-            if json.loads(response)['status'] != 200:
+            response = json.loads(await self.websocket.recv())
+            if response['status'] != 200:
                 logger.error('failed to cancel orders: {}', response)
         except Exception as e:
             logger.error('exception while cancelling orders: {}', e)
