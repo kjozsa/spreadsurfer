@@ -9,9 +9,10 @@ from sklearn.pipeline import Pipeline
 
 from .datacollect import DataCollector
 
-order_config = json.load(open('config.json'))['orders']
-aim_above_min = order_config['aim_above_min']
+pricing_config = json.load(open('config.json'))['pricing']
+aim_above_min = pricing_config['aim_above_min']
 aim_below_max = aim_above_min
+balance_guess = pricing_config['balance_guess']
 
 
 class FeatureEngineer(BaseEstimator, TransformerMixin):
@@ -55,11 +56,11 @@ class PriceEngine:
         match stabilized_hint:
             case 'min':  # raising price?
                 low_price = price_max + aim_above_min
-                high_price = low_price + guess
+                high_price = low_price + (guess * balance_guess)
 
             case 'max':  # lowering price?
                 high_price = price_min - aim_below_max
-                low_price = high_price + guess
+                low_price = high_price + (guess * balance_guess)
             case _:
                 raise AssertionError('missing stabilized_hint')
 

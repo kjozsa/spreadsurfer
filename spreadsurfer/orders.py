@@ -19,9 +19,6 @@ orders_disabled = order_config['orders_disabled']
 max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
 base_amount = order_config['base_amount']
-hint_buff_factor = order_config['hint_buff_factor']
-aim_above_min = order_config['aim_above_min']
-aim_below_max = aim_above_min
 
 
 class OrderMaker:
