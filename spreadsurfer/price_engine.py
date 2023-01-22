@@ -59,12 +59,12 @@ class PriceEngine:
 
             case 'max':  # lowering price?
                 high_price = price_min - aim_below_max
-                low_price = high_price - guess
+                low_price = high_price + guess
             case _:
                 raise AssertionError('missing stabilized_hint')
 
         if low_price > high_price:
-            logger.critical('pricing anomaly detected, low_price is higher than high_price')
+            logger.critical('pricing anomaly detected, low_price: {}, high price: {}, not placing order', low_price, high_price)
             return None, None
 
         return round(low_price, 2), round(high_price, 2)
