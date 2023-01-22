@@ -15,7 +15,7 @@
     "collect_last_n_wave": 6
   },
   "orders": {
-    "disabled": true,
+    "orders_disabled": true,
     "test_mode": true,
     "max_nr_orders_limited": true,
     "max_nr_orders_created": 50,

@@ -3,6 +3,7 @@ import sys
 from spreadsurfer import *
 import asyncio
 from loguru import logger
+from spreadsurfer.bookkeeper import Bookkeeper
 
 sys.tracebacklimit = 3
 
@@ -15,6 +16,7 @@ logger.level("data", color='<light-blue>', no=35)
 logger.level("ml", color='<light-cyan>', no=37)
 logger.add("console.log", rotation="500 MB")
 
+
 @logger.catch
 async def main():
     wave_events_queue = asyncio.Queue(maxsize=1)
@@ -24,12 +26,13 @@ async def main():
 
     try:
         balance_watcher = BalanceWatcher(exchange)
+        bookkeeper = Bookkeeper()
         coroutines = [
             TimeTracker(),
             balance_watcher,
-            TradeWatcher(exchange, wave_events_queue),
+            TradeWatcher(exchange, wave_events_queue, bookkeeper),
             WaveHandler(wave_events_queue, orders_queue, datacollect_queue),
-            OrderMaker(exchange, orders_queue, balance_watcher),
+            OrderMaker(exchange, orders_queue, balance_watcher, bookkeeper),
             DataCollector(datacollect_queue)
         ]
         tasks = [asyncio.create_task(x.start()) for x in coroutines]

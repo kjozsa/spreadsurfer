@@ -4,6 +4,7 @@ import json
 import math
 import signal
 from datetime import datetime
+from random import randint
 
 import asyncio
 import websockets
@@ -76,7 +77,7 @@ class BinanceWebsocketConnector:
                 raise Exception('order ' + order_id + ' failed to create: ' + response)
         else:
             logger.error('TEST order created: {}', request)
-            response = {'id': 'test12345'}
+            response = {'id': f'test{randint(1000000, 999999)}'}
         return response
 
     async def cancel_orders(self, wave_id):

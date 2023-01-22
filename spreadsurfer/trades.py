@@ -5,14 +5,16 @@ import pandas as pd
 from dateutil import parser as dateparser
 from dateutil.relativedelta import relativedelta
 from loguru import logger
+from spreadsurfer.bookkeeper import Bookkeeper
 
 import spreadsurfer
 
 
 class TradeWatcher:
-    def __init__(self, exchange: ccxt.Exchange, wave_events_queue: asyncio.Queue):
+    def __init__(self, exchange: ccxt.Exchange, wave_events_queue: asyncio.Queue, bookkeeper: Bookkeeper):
         self.exchange = exchange
         self.wave_events_queue = wave_events_queue
+        self.bookkeeper = bookkeeper
         self.wave_running = False
 
     async def start(self):

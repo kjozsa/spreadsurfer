@@ -7,6 +7,7 @@ from loguru import logger
 from spreadsurfer import *
 from spreadsurfer.connector_binance_wss import BinanceWebsocketConnector
 from spreadsurfer.price_engine import PriceEngine
+from spreadsurfer.bookkeeper import Bookkeeper
 
 # enable ccxt debug logging:
 # import logging
@@ -22,13 +23,12 @@ base_amount = order_config['base_amount']
 
 
 class OrderMaker:
-    def __init__(self, exchange: ccxt.Exchange, orders_queue: asyncio.Queue, balance_watcher: BalanceWatcher):
+    def __init__(self, exchange: ccxt.Exchange, orders_queue: asyncio.Queue, balance_watcher: BalanceWatcher, bookkeeper: Bookkeeper):
         self.exchange = exchange
         self.orders_queue = orders_queue
         self.balance_watcher = balance_watcher
+        self.bookkeeper = bookkeeper
 
-        self.wave_orders = {}  # <wave_id, list<order>>
-        self.active_orders = {}  # <order_id, order>
         self.nr_orders_created = 0
         self.connector_wss = BinanceWebsocketConnector()
         self.price_engine = PriceEngine()
@@ -73,13 +73,10 @@ class OrderMaker:
             case 'max':  # price is dropping
                 await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, new_orders, limit=True)
                 await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, new_orders, limit=True)
-        self.wave_orders[wave_id] = new_orders
-        for order in new_orders:
-            self.active_orders[order['id']] = order
+        self.bookkeeper.save_orders(wave_id, new_orders)
 
     async def cancel_orders(self, wave_id):
-        if wave_id in self.wave_orders.keys():
-            self.wave_orders.pop(wave_id)
+        if self.bookkeeper.remove_orders_from_wave(wave_id):
             logger.success('cancelling all orders in wave {}', wave_id)
             try:
                 await self.connector_wss.cancel_orders(wave_id)
