@@ -42,7 +42,7 @@ class Bookkeeper:
 
     def fulfill_order(self, order_price):
         if order_price in self.active_orders_by_price:
-            order = self._remove_orders_by_price(order_price)
+            order = self.past_orders_by_price.pop(order_price)
             logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order_price)
 
         if order_price in self.past_orders_by_price:
