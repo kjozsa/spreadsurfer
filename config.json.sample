@@ -19,7 +19,9 @@
     "test_mode": true,
     "max_nr_orders_limited": true,
     "max_nr_orders_created": 50,
-    "base_amount" : 0.0015
+    "base_amount" : 0.0015,
+    "skip_order_on_spread_below":  0.2,
+    "skip_order_on_spread_above":  10
   },
   "datacollect": {
     "datacollect_disabled": false,

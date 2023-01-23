@@ -19,4 +19,7 @@
 - restabilizing changing waves
 - datacollect on changing waves
 
+# v1.6
+- bookkeeper tracking fulfilled orders
+
 

@@ -7,13 +7,16 @@ from loguru import logger
 
 from .timeutils import now, timedelta_ms
 
-wave_config = json.load(open('config.json'))['wave']
+config = json.load(open('config.json'))
+wave_config = config['wave']
 logger.info('wave detection config: {}', wave_config)
 wave_min_length = wave_config['min_length']
 wave_investigate_length = wave_config['investigate_length']
 wave_stabilized_threshold = wave_config['stabilized_threshold']
 max_delta_ms_to_create_order = wave_config['max_delta_ms_to_create_order']
 collect_last_n_wave = wave_config['collect_last_n_wave']
+skip_order_on_spread_below = config['orders']['skip_order_on_spread_below']
+skip_order_on_spread_above = config['orders']['skip_order_on_spread_above']
 
 
 class WaveHandler:
@@ -120,11 +123,11 @@ class WaveHandler:
             logger.log('magenta', 'delta_ms {} is larger than {}, making no order in this wave', delta_ms, max_delta_ms_to_create_order)
             create_order = False
 
-        elif stabilized_frame['spread'].mean() < 0.2:
+        elif stabilized_frame['spread'].mean() < skip_order_on_spread_below:
             logger.log('magenta', 'skipping order, stabilized spread is too small: {}', stabilized_frame['spread'])
             create_order = False
 
-        elif stabilized_frame['spread'].mean() > 10:
+        elif stabilized_frame['spread'].mean() > skip_order_on_spread_above:
             logger.log('magenta', 'skipping order, stabilized spread is too large: {}', stabilized_frame['spread'])
             create_order = False
 
