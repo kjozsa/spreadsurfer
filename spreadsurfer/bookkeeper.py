@@ -46,8 +46,8 @@ class Bookkeeper:
             logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order_price)
 
         if order_price in self.past_orders_by_price:
+            order = self.past_orders_by_price.pop(order_price)
             logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order_price)
-            self.past_orders_by_price.pop(order_price)
 
     def report(self):
         logger.log('bookkeeper', '{} active_orders, {} wave_orders', len(self.active_orders_by_price), len(self.wave_orders))
