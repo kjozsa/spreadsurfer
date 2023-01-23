@@ -1,3 +1,5 @@
+import collections
+
 import asyncio
 import json
 
@@ -14,7 +16,8 @@ wave_min_length = wave_config['min_length']
 wave_investigate_length = wave_config['investigate_length']
 wave_stabilized_threshold = wave_config['stabilized_threshold']
 max_delta_ms_to_create_order = wave_config['max_delta_ms_to_create_order']
-collect_last_n_wave = wave_config['collect_last_n_wave']
+collect_last_n_frames = wave_config['collect_last_n_frames']
+
 skip_order_on_spread_below = config['orders']['skip_order_on_spread_below']
 skip_order_on_spread_above = config['orders']['skip_order_on_spread_above']
 
@@ -24,6 +27,7 @@ class WaveHandler:
         self.wave_events_queue = wave_events_queue
         self.orders_queue = orders_queue
         self.datacollect_queue = datacollect_queue
+        self.past_waves_final_prices = collections.deque(5*[0], 5)
 
         self.wave_start = None
         self.wave = pd.DataFrame(columns=['ms' 'price', 'amount'])
@@ -76,7 +80,7 @@ class WaveHandler:
 
     async def send_to_datacollect(self, wave_end_frame, wave_length_ms):
         end = self.wave_stabilized_at_frame
-        start = end - collect_last_n_wave
+        start = end - collect_last_n_frames
         frames = self.wave[start:end]
         logger.trace('$$$$$$ sending {} frames', len(frames))
         await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, frames, wave_length_ms, wave_end_frame))
@@ -113,7 +117,7 @@ class WaveHandler:
 
         if self.shall_create_order(stabilized_frame, delta_ms):
             end = self.wave_stabilized_at_frame
-            start = end - collect_last_n_wave
+            start = end - collect_last_n_frames
             frames = self.wave[start:end]
             await self.orders_queue.put((self.wave_id, 'create', frames, min_or_max, delta_ms))
 
