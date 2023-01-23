@@ -26,7 +26,7 @@ class TradeWatcher:
             fresh_data = []
             for trade in trades:
                 fresh_data.append({'ms': dateparser.parse(trade['datetime']), 'price': trade['price'], 'amount': trade['amount']})
-                self.bookkeeper.fulfill_order(trade['id'])
+                self.bookkeeper.fulfill_order(trade['price'])
             df = pd.concat([df, pd.DataFrame(fresh_data)])
 
             # cut frame to latest X seconds
