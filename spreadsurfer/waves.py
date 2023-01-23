@@ -17,6 +17,7 @@ wave_investigate_length = wave_config['investigate_length']
 wave_stabilized_threshold = wave_config['stabilized_threshold']
 max_delta_ms_to_create_order = wave_config['max_delta_ms_to_create_order']
 collect_last_n_frames = wave_config['collect_last_n_frames']
+collect_last_n_wave_prices = wave_config['collect_last_n_wave_prices']
 
 skip_order_on_spread_below = config['orders']['skip_order_on_spread_below']
 skip_order_on_spread_above = config['orders']['skip_order_on_spread_above']
@@ -27,7 +28,7 @@ class WaveHandler:
         self.wave_events_queue = wave_events_queue
         self.orders_queue = orders_queue
         self.datacollect_queue = datacollect_queue
-        self.past_waves_final_prices = collections.deque(5*[0], 5)
+        self.past_waves_final_prices = collections.deque(collect_last_n_wave_prices * [None], collect_last_n_wave_prices)
 
         self.wave_start = None
         self.wave = pd.DataFrame(columns=['ms' 'price', 'amount'])
@@ -62,17 +63,19 @@ class WaveHandler:
         self.wave = pd.concat([self.wave, wave_frame])
         await self.check_stabilized(wave_frame)
 
-    async def end_wave(self, wave_end_frame):
+    async def end_wave(self, end_frame):
         last_frame = self.wave.tail(1)
         await self.orders_queue.put((self.wave_id, 'cancel', last_frame, None, None))
         wave_length_ms = timedelta_ms(now(), self.wave_start)
+        last_price = end_frame['price_max'].max() if self.wave_stabilized == 'min' else end_frame['price_min'].min()
         logger.warning('ending wave {}, wave length was {} ms', self.wave_id, wave_length_ms)
 
         if self.wave_stabilized:
-            await self.send_to_datacollect(wave_end_frame, wave_length_ms)
+            await self.send_to_datacollect(end_frame, wave_length_ms)
         else:
             logger.warning('$$$ skip collecting wave data, stabilized {}', self.wave_stabilized)
 
+        self.past_waves_final_prices.append(last_price)
         self.wave_stabilized = None
         self.wave_stabilized_at_ms = None
         self.wave_stabilized_frame = None
@@ -83,7 +86,7 @@ class WaveHandler:
         start = end - collect_last_n_frames
         frames = self.wave[start:end]
         logger.trace('$$$$$$ sending {} frames', len(frames))
-        await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, frames, wave_length_ms, wave_end_frame))
+        await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, frames, wave_length_ms, wave_end_frame, self.past_waves_final_prices))
 
     async def check_stabilized(self, wave_frame):
         if not self.wave_running or len(self.wave) <= wave_min_length:

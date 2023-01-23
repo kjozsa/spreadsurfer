@@ -1,23 +1,20 @@
-import pickle
-import signal
-
-import asyncio
+import atexit
 import json
 import os
-from datetime import datetime
 
 import pandas as pd
-import atexit
 from loguru import logger
 
 from spreadsurfer import now_isoformat
 
-datacollect_config = json.load(open('config.json'))['datacollect']
+config = json.load(open('config.json'))
+datacollect_config = config['datacollect']
 
 dump_batch_size = datacollect_config['dump_batch_size']
 data_files_path = datacollect_config['data_files_path']
 round_prices = datacollect_config['round_prices']
 datacollect_disabled = datacollect_config['datacollect_disabled']
+collect_last_n_wave_prices = config['wave']['collect_last_n_wave_prices']
 
 
 def r(num):
@@ -27,6 +24,7 @@ def r(num):
 class DataCollector:
     def __init__(self, datacollect_queue):
         logger.log('data', 'datacollect config: {}', datacollect_config)
+        logger.log('data', 'collecting last {} waves\' final prices', collect_last_n_wave_prices)
 
         if not datacollect_disabled:
             os.makedirs(data_files_path, exist_ok=True)
@@ -35,7 +33,7 @@ class DataCollector:
             logger.log('data', 'writing output to {}', self.data_file)
 
         self.datacollect_queue = datacollect_queue
-        self.df = pd.DataFrame(columns=[
+        columns = [
             '0_amount_mean',
             '0_nr_trades',
             '0_price_delta',
@@ -62,22 +60,33 @@ class DataCollector:
             'stabilized_nr_trades',
             'stabilized_spread',
             'wave_direction'
-        ])
+        ]
+        self.past_price_columns = [f'past_final_price_{x}' for x in range(0, collect_last_n_wave_prices)]
+        columns += self.past_price_columns
+        self.df = pd.DataFrame(columns=columns)
 
     async def start(self):
         if not datacollect_disabled:
             atexit.register(self.dump_data_to_file)
 
         while True:
-            (wave_stabilized, stabilized_ms, frames, end_ms, end_frame) = await self.datacollect_queue.get()
+            (wave_stabilized, stabilized_ms, frames, end_ms, end_frame, past_waves_final_prices) = await self.datacollect_queue.get()
 
             if datacollect_disabled:
                 continue
 
+            if None in past_waves_final_prices:
+                logger.log('data', 'skip collecting wave, past_final_prices not filled up yet')
+                continue
+
             frames_data, stabilized_data, stabilized_price = await self.collect_wave_data(frames, stabilized_ms, wave_stabilized)
-            last_price_delta = r(end_frame['price_max'].max() - stabilized_price) if wave_stabilized == 'min' else r(end_frame['price_min'].min() - stabilized_price)
-            last_price = {'last_price_delta_since_stabilized': last_price_delta}
-            fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | last_price.items()))
+            last_price = end_frame['price_max'].max() if wave_stabilized == 'min' else end_frame['price_min'].min()
+            last_price_delta = r(last_price - stabilized_price)
+            last_price_obj = {'last_price_delta_since_stabilized': last_price_delta}
+            corrected_past_waves_final_prices = [last_price - x for x in past_waves_final_prices]
+            past_prices = dict(zip(self.past_price_columns, corrected_past_waves_final_prices))
+
+            fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | last_price_obj.items() | past_prices.items()))
 
             logger.log('data', 'wave collected: {}', fresh_data)
             self.df = pd.concat([self.df, pd.DataFrame([fresh_data])])
