@@ -40,3 +40,13 @@ def test_fulfill_order():
     bookkeeper.fulfill_order('p2')
     assert len(bookkeeper.wave_orders) == 0
     assert len(bookkeeper.active_orders_by_price) == 0
+
+
+def test_cancel_then_fulfill():
+    bookkeeper = Bookkeeper()
+    bookkeeper.save_orders('w1', [{'price': 'p1'}, {'price': 'p2'}])
+    assert {} == bookkeeper.past_orders_by_price
+    bookkeeper.remove_orders_by_wave('w1')
+    assert 2 == len(bookkeeper.past_orders_by_price)
+    bookkeeper.fulfill_order('p1')
+    assert 1 == len(bookkeeper.past_orders_by_price)

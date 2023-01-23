@@ -4,6 +4,8 @@ from loguru import logger
 class Bookkeeper:
     def __init__(self):
         self.active_orders_by_price = {}  # <price, order>
+        self.past_orders_by_price = {}  # <price, order>
+
         self.wave_orders = {}  # <wave_id, list<order>>
 
     def start(self):
@@ -15,11 +17,14 @@ class Bookkeeper:
             self.active_orders_by_price[order['price']] = order
 
     def remove_orders_by_wave(self, wave_id):
+        self.past_orders_by_price = {}
         if wave_id in self.wave_orders:
             orders = self.wave_orders.pop(wave_id)
             for order in orders:
                 self.active_orders_by_price.pop(order['price'])
+                self.past_orders_by_price[order['price']] = order
             logger.log('bookkeeper', 'cancelled {} orders by wave', len(orders))
+            logger.log('bookkeeper', '############## {}', self.past_orders_by_price)
             return True
         else:
             return False
@@ -39,6 +44,10 @@ class Bookkeeper:
         if order_price in self.active_orders_by_price:
             logger.log('bookkeeper', '$$$ FULFILLED ORDER {}', order_price)
             self._remove_orders_by_price(order_price)
+
+        if order_price in self.past_orders_by_price:
+            logger.log('bookkeeper', '$$$ FULFILLED ORDER {}', order_price)
+            self.past_orders_by_price.pop(order_price)
 
     def report(self):
         logger.log('bookkeeper', '{} active_orders, {} wave_orders', len(self.active_orders_by_price), len(self.wave_orders))
