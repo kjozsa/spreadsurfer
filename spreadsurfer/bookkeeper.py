@@ -17,14 +17,14 @@ class Bookkeeper:
             self.active_orders_by_price[order['price']] = order
 
     def remove_orders_by_wave(self, wave_id):
+        logger.log('bookkeeper', 'giving up on {} past orders', len(self.past_orders_by_price))
         self.past_orders_by_price = {}
+
         if wave_id in self.wave_orders:
             orders = self.wave_orders.pop(wave_id)
             for order in orders:
                 self.active_orders_by_price.pop(order['price'])
                 self.past_orders_by_price[order['price']] = order
-            logger.log('bookkeeper', 'cancelled {} orders by wave', len(orders))
-            logger.log('bookkeeper', '############## {}', self.past_orders_by_price)
             return True
         else:
             return False
@@ -42,11 +42,11 @@ class Bookkeeper:
 
     def fulfill_order(self, order_price):
         if order_price in self.active_orders_by_price:
-            logger.log('bookkeeper', '$$$ FULFILLED ORDER {}', order_price)
-            self._remove_orders_by_price(order_price)
+            order = self._remove_orders_by_price(order_price)
+            logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order_price)
 
         if order_price in self.past_orders_by_price:
-            logger.log('bookkeeper', '$$$ FULFILLED ORDER {}', order_price)
+            logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order_price)
             self.past_orders_by_price.pop(order_price)
 
     def report(self):
