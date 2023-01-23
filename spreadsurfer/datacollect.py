@@ -33,6 +33,7 @@ class DataCollector:
             logger.log('data', 'writing output to {}', self.data_file)
 
         self.datacollect_queue = datacollect_queue
+        self.waves_collected = 0
         columns = [
             '0_amount_mean',
             '0_nr_trades',
@@ -88,7 +89,8 @@ class DataCollector:
 
             fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | last_price_obj.items() | past_prices.items()))
 
-            logger.log('data', 'wave collected: {}', fresh_data)
+            self.waves_collected += 1
+            logger.log('data', 'wave {} collected: {}', self.waves_collected, fresh_data)
             self.df = pd.concat([self.df, pd.DataFrame([fresh_data])])
 
             if len(self.df) >= dump_batch_size:

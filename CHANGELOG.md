@@ -22,4 +22,6 @@
 # v1.6
 - bookkeeper tracking fulfilled orders
 
+# v1.7
+- collect last N waves' prices
 
