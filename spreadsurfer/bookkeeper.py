@@ -38,11 +38,12 @@ class Bookkeeper:
                     orders.remove(order)
                     if len(orders) == 0:
                         self.wave_orders.pop(wave_id)
-                    break
+                    return order
+        return None
 
     def fulfill_order(self, order_price):
         if order_price in self.active_orders_by_price:
-            order = self.past_orders_by_price.pop(order_price)
+            order = self._remove_orders_by_price(order_price)
             logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order_price)
 
         if order_price in self.past_orders_by_price:
