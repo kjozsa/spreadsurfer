@@ -17,7 +17,6 @@ class Bookkeeper:
             self.active_orders_by_price[order['price']] = order
 
     def remove_orders_by_wave(self, wave_id):
-        logger.log('bookkeeper', 'giving up on {} past orders', len(self.past_orders_by_price))
         self.past_orders_by_price = {}
 
         if wave_id in self.wave_orders:
