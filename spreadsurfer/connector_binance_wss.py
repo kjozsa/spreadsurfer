@@ -35,18 +35,18 @@ class BinanceWebsocketConnector:
     async def send_buy_order(self, order_nr, wave_id, price, amount, limit):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order = await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit)
+            await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit)
             logger.success('#{}. {} BUY ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
         except Exception as e:
-            logger.error(e)
+            logger.error('BUY order failed', e)
 
     async def send_sell_order(self, order_nr, wave_id, price, amount, limit):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order = await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit)
+            await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit)
             logger.success('#{}. {} SELL ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
         except Exception as e:
-            logger.error(e)
+            logger.error('SELL order failed', e)
 
     async def send_order(self, order_id, price, amount, buy, limit):
         buy_sell = 'BUY' if buy else 'SELL'
@@ -71,7 +71,7 @@ class BinanceWebsocketConnector:
             await self.websocket.send(request)
             response = json.loads(await self.websocket.recv())
             if response['status'] != 200:
-                logger.error('order request was {} : {}', order_id, request)
+                logger.error('order request {} was : {}', order_id, request)
                 raise Exception('order ' + order_id + ' failed to create: ' + response)
         else:
             logger.error('TEST order created: {}', request)
