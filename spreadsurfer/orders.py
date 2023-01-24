@@ -19,6 +19,7 @@ logger.info('order config: {}', order_config)
 orders_disabled = order_config['orders_disabled']
 max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
+low_spread_limit = order_config['low_spread_limit']
 base_amount = order_config['base_amount']
 
 
@@ -64,7 +65,12 @@ class OrderMaker:
         buy_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_usd(price_mean), 5))
         sell_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_btc(price_mean), 5))
 
-        logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
+        spread = round(high_price - low_price, 3)
+        if spread <= low_spread_limit:
+            logger.success('order spread would be lower than configured spread limit ({}), not placing orders', low_spread_limit)
+            return
+
+        logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, spread)
         match stabilized_hint:
             case 'min':  # price is raising
                 await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True)
