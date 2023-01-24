@@ -67,7 +67,7 @@ class WaveHandler:
         last_frame = self.wave.tail(1)
         await self.orders_queue.put((self.wave_id, 'cancel', last_frame, None, None))
         wave_length_ms = timedelta_ms(now(), self.wave_start)
-        last_price = end_frame['price_max'].max() if self.wave_stabilized == 'min' else end_frame['price_min'].min()
+        last_price = last_frame['price_max'].max() if self.wave_stabilized == 'min' else last_frame['price_min'].min()
         logger.warning('ending wave {}, wave length was {} ms', self.wave_id, wave_length_ms)
 
         if self.wave_stabilized:
