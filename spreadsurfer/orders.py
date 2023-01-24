@@ -21,7 +21,7 @@ max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
 low_spread_limit = order_config['low_spread_limit']
 base_amount = order_config['base_amount']
-recv_window = order_config['orders']['recv_window']
+recv_window = order_config['recv_window']
 
 
 class OrderMaker:
