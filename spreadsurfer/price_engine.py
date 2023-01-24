@@ -28,7 +28,9 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
 
 
 class PriceEngine:
-    def __init__(self):
+    def __init__(self, data_collector: DataCollector):
+        self.data_collector = data_collector
+
         cat_filename = glob('*.cat')[0]
         self.model = CatBoostRegressor()
         self.model.load_model(cat_filename)
@@ -36,13 +38,12 @@ class PriceEngine:
 
         self.pipeline = Pipeline(steps=[
             ('preprocessor', FeatureEngineer()),
-            # ('model', RandomForestRegressor(n_estimators=50, random_state=0))
             ('model', self.model)
         ])
 
     async def predict(self, stabilized_hint, frames, stabilized_at_ms):
         frames_data, stabilized_data, _ = await DataCollector.collect_wave_data(frames, stabilized_at_ms, stabilized_hint)
-        fresh_data = dict(sorted(frames_data.items() | stabilized_data.items()))
+        fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | self.data_collector.past_prices().items()))
         logger.log('ml', 'predict input: {}', fresh_data)
 
         df = pd.DataFrame([fresh_data])

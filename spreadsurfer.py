@@ -4,6 +4,7 @@ from spreadsurfer import *
 import asyncio
 from loguru import logger
 from spreadsurfer.bookkeeper import Bookkeeper
+from spreadsurfer.price_engine import PriceEngine
 
 sys.tracebacklimit = 3
 
@@ -28,13 +29,14 @@ async def main():
     try:
         balance_watcher = BalanceWatcher(exchange)
         bookkeeper = Bookkeeper()
+        data_collector = DataCollector(datacollect_queue)
         coroutines = [
             TimeTracker(),
             balance_watcher,
             TradeWatcher(exchange, wave_events_queue, bookkeeper),
             WaveHandler(wave_events_queue, orders_queue, datacollect_queue),
-            OrderMaker(exchange, orders_queue, balance_watcher, bookkeeper),
-            DataCollector(datacollect_queue)
+            OrderMaker(exchange, orders_queue, balance_watcher, bookkeeper, PriceEngine(data_collector)),
+            data_collector
         ]
         tasks = [asyncio.create_task(x.start()) for x in coroutines]
         await asyncio.gather(*tasks)

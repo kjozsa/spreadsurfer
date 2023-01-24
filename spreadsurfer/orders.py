@@ -23,7 +23,7 @@ base_amount = order_config['base_amount']
 
 
 class OrderMaker:
-    def __init__(self, exchange: ccxt.Exchange, orders_queue: asyncio.Queue, balance_watcher: BalanceWatcher, bookkeeper: Bookkeeper):
+    def __init__(self, exchange: ccxt.Exchange, orders_queue: asyncio.Queue, balance_watcher: BalanceWatcher, bookkeeper: Bookkeeper, price_engine: PriceEngine):
         self.exchange = exchange
         self.orders_queue = orders_queue
         self.balance_watcher = balance_watcher
@@ -31,7 +31,7 @@ class OrderMaker:
 
         self.nr_orders_created = 0
         self.connector_wss = BinanceWebsocketConnector()
-        self.price_engine = PriceEngine()
+        self.price_engine = price_engine
 
     async def start(self):
         await self.connector_wss.start()
@@ -43,8 +43,11 @@ class OrderMaker:
 
             match event_name:
                 case 'create':
-                    await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms)
-                    self.nr_orders_created += 1
+                    try:
+                        await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms)
+                        self.nr_orders_created += 1
+                    except Exception as e:
+                        logger.critical('not creating order: {}', str(e))
 
                 case 'cancel':
                     await self.cancel_orders(wave_id)
@@ -57,15 +60,11 @@ class OrderMaker:
         price_mean = stabilized_frame['price_mean'][0]
 
         low_price, high_price = await self.price_engine.predict(stabilized_hint, frames, stabilized_at_ms)
-        if low_price is None or high_price is None:
-            logger.critical('not creating order, no clear direction received ({})', stabilized_hint)
-            return
 
         buy_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_usd(price_mean), 5))
         sell_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_btc(price_mean), 5))
 
         logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, round(high_price - low_price, 3))
-        new_orders = []
         match stabilized_hint:
             case 'min':  # price is raising
                 await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True)

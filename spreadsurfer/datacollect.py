@@ -25,6 +25,7 @@ class DataCollector:
     def __init__(self, datacollect_queue):
         logger.log('data', 'datacollect config: {}', datacollect_config)
         logger.log('data', 'collecting last {} waves\' final prices', collect_last_n_wave_prices)
+        self.past_waves_final_prices = None
 
         if not datacollect_disabled:
             os.makedirs(data_files_path, exist_ok=True)
@@ -72,6 +73,7 @@ class DataCollector:
 
         while True:
             (wave_stabilized, stabilized_ms, frames, end_ms, end_frame, past_waves_final_prices) = await self.datacollect_queue.get()
+            self.past_waves_final_prices = past_waves_final_prices
 
             if datacollect_disabled:
                 continue
@@ -84,10 +86,8 @@ class DataCollector:
             last_price = end_frame['price_max'].max() if wave_stabilized == 'min' else end_frame['price_min'].min()
             last_price_delta = r(last_price - stabilized_price)
             last_price_obj = {'last_price_delta_since_stabilized': last_price_delta}
-            corrected_past_waves_final_prices = [last_price - x for x in past_waves_final_prices]
-            past_prices = dict(zip(self.past_price_columns, corrected_past_waves_final_prices))
 
-            fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | last_price_obj.items() | past_prices.items()))
+            fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | last_price_obj.items() | self.past_prices().items()))
 
             self.waves_collected += 1
             logger.log('data', 'wave {} collected: {}', self.waves_collected, fresh_data)
@@ -95,6 +95,13 @@ class DataCollector:
 
             if len(self.df) >= dump_batch_size:
                 self.dump_data_to_file()
+
+    def past_prices(self):
+        if None in self.past_waves_final_prices:
+            raise Exception("can't predict, past_final_prices not filled up yet")
+        last_known_price = self.past_waves_final_prices[-1]
+        corrected_past_waves_final_prices = [last_known_price - x for x in self.past_waves_final_prices]
+        return dict(zip(self.past_price_columns, corrected_past_waves_final_prices))
 
     @staticmethod
     async def collect_wave_data(frames, stabilized_ms, wave_stabilized):
