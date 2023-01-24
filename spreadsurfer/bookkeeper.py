@@ -23,8 +23,12 @@ class Bookkeeper:
         if wave_id in self.wave_orders:
             orders = self.wave_orders.pop(wave_id)
             for order in orders:
-                self.active_orders_by_price.pop(order['price'])
-                self.past_orders_by_price[order['price']] = order
+                try:
+                    self.active_orders_by_price.pop(order['price'])
+                    self.past_orders_by_price[order['price']] = order
+                except KeyError:
+                    logger.debug('%%%%%% failed to remove orders by wave (KeyError) - to investigate later')
+                    pass
             return True
         else:
             return False
