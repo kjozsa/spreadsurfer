@@ -73,7 +73,7 @@ class OrderMaker:
             case 'max':  # price is dropping
                 await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True)
                 await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True)
-        self.bookkeeper.save_orders(wave_id, [{'price': low_price, 'type': 'LIMIT BUY'}, {'price': high_price, 'type': 'LIMIT SELL'}])
+        self.bookkeeper.save_orders(wave_id, [{'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount}, {'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount}])
 
     async def cancel_orders(self, wave_id):
         if self.bookkeeper.remove_orders_by_wave(wave_id):
