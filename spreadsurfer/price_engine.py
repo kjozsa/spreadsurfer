@@ -66,8 +66,7 @@ class PriceEngine:
                 raise AssertionError('missing stabilized_hint')
 
         if low_price > high_price:
-            logger.critical('pricing anomaly detected, low_price: {}, high price: {}, not placing order', low_price, high_price)
-            return None, None
+            raise Exception(f'predicted price anomaly, low_price: {low_price}, high price: {high_price}, skip placing order')
 
         return round(low_price, 2), round(high_price, 2)
 
