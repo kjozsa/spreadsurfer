@@ -23,7 +23,8 @@
     "base_amount" : 0.0015,
     "skip_order_on_spread_below":  0.2,
     "skip_order_on_spread_above":  10,
-    "low_spread_limit": 0.5
+    "low_spread_limit": 0.5,
+    "recv_window": 500
   },
   "datacollect": {
     "datacollect_disabled": false,

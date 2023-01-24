@@ -21,6 +21,7 @@ max_nr_orders_limited = order_config['max_nr_orders_limited']
 max_nr_orders_created = order_config['max_nr_orders_created']
 low_spread_limit = order_config['low_spread_limit']
 base_amount = order_config['base_amount']
+recv_window = order_config['orders']['recv_window']
 
 
 class OrderMaker:
@@ -73,11 +74,11 @@ class OrderMaker:
         logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, spread)
         match stabilized_hint:
             case 'min':  # price is raising
-                await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True)
                 await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True)
+                await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True, recv_window=recv_window)
             case 'max':  # price is dropping
-                await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True)
                 await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True)
+                await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True, recv_window=recv_window)
         self.bookkeeper.save_orders(wave_id, [{'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount}, {'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount}])
 
     async def cancel_orders(self, wave_id):

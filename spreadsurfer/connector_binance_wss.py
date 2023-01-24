@@ -32,30 +32,30 @@ class BinanceWebsocketConnector:
         loop = asyncio.get_running_loop()
         loop.add_signal_handler(signal.SIGTERM, loop.create_task, self.websocket.close())
 
-    async def send_buy_order(self, order_nr, wave_id, price, amount, limit):
+    async def send_buy_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit)
+            await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit, recv_window=recv_window)
             logger.success('#{}. {} BUY ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
         except Exception as e:
             logger.error('BUY order failed', e)
 
-    async def send_sell_order(self, order_nr, wave_id, price, amount, limit):
+    async def send_sell_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit)
+            await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit, recv_window=recv_window)
             logger.success('#{}. {} SELL ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
         except Exception as e:
             logger.error('SELL order failed', e)
 
-    async def send_order(self, order_id, price, amount, buy, limit):
+    async def send_order(self, order_id, price, amount, buy, limit, recv_window):
         buy_sell = 'BUY' if buy else 'SELL'
         params = {
             'apiKey': api_key,
             'newOrderRespType': 'ACK',
             'price': price,
             'quantity': amount,
-            # 'recvWindow': recv_window,
+            'recvWindow': recv_window,
             'side': buy_sell,
             'symbol': 'BTCUSDT',
             'timeInForce': 'GTC',
@@ -65,6 +65,9 @@ class BinanceWebsocketConnector:
         if not limit:  # market order has no price or timeInForce field
             params.pop('price')
             params.pop('timeInForce')
+
+        if not recv_window:
+            params.pop('recvWindow')
 
         request = self.sign(params, order_id, 'order.place')
         if not test_mode:
