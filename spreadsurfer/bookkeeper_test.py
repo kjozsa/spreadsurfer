@@ -44,6 +44,7 @@ def test_fulfill_order():
     bookkeeper.fulfill_order(123456)
     assert len(bookkeeper.df_active) == 0
 
+
 def test_cancel_then_fulfill():
     bookkeeper = Bookkeeper()
     save_orders(bookkeeper)
