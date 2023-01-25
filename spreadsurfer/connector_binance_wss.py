@@ -10,6 +10,8 @@ import asyncio
 import websockets
 from loguru import logger
 
+from timeutils import timestamp_now_ms
+
 config = json.load(open('config.json'))
 
 # uri = "wss://testnet.binance.vision/ws-api/v3"
@@ -36,9 +38,9 @@ class BinanceWebsocketConnector:
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
             order = await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit, recv_window=recv_window)
-            order_id = order['result']['orderId']
+            order_id, timestamp_created_ms = order['result']['orderId']
             logger.success('#{}. {} BUY ORDER PLACED!! order_id {}, wave {} - at price {}, recv {}', order_nr, limit_str, order_id, wave_id, price if limit else '?', recv_window)
-            return order_id
+            return order_id, timestamp_created_ms
         except Exception as e:
             logger.error('BUY order failed', e)
 
@@ -46,9 +48,9 @@ class BinanceWebsocketConnector:
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
             order = await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit, recv_window=recv_window)
-            order_id = order['result']['orderId']
+            order_id, timestamp_created_ms = order['result']['orderId']
             logger.success('#{}. {} SELL ORDER PLACED!! order_id {}, wave {} - at price {}, recv {}', order_nr, limit_str, order_id, wave_id, price if limit else '?', recv_window)
-            return order_id
+            return order_id, timestamp_created_ms
         except Exception as e:
             logger.error('SELL order failed', e)
 
@@ -63,7 +65,7 @@ class BinanceWebsocketConnector:
             'side': buy_sell,
             'symbol': 'BTCUSDT',
             'timeInForce': 'GTC',
-            'timestamp': math.floor(datetime.now().timestamp() * 1000),
+            'timestamp': timestamp_now_ms(),
             'type': 'LIMIT' if limit else 'MARKET'
         }
         if not limit:  # market order has no price or timeInForce field
@@ -78,13 +80,13 @@ class BinanceWebsocketConnector:
             await self.websocket.send(request)
             response = json.loads(await self.websocket.recv())
             if response['status'] != 200:
-                logger.error('order request {} was : {}', order_id, request)
+                logger.error('order request {} was : {}\nresponse was: {}', order_id, request, response)
                 raise Exception('order ' + order_id + ' failed to create: ' + response)
         else:
             logger.error('TEST order created: {}', request)
             random_id = randint(1000000, 9999999)
             response = {'id': f'test{random_id}', 'result': {'orderId': random_id}}
-        return response
+        return response, timestamp_now_ms
 
     async def cancel_all_orders(self, wave_id):
         if test_mode:
