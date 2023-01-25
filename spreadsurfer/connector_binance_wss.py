@@ -80,10 +80,14 @@ class BinanceWebsocketConnector:
         request = self.sign(params, order_id, 'order.place')
         if not test_mode:
             await self.websocket.send(request)
-            response = json.loads(await self.websocket.recv())
+            response_str = await self.websocket.recv()
+            response = json.loads(response_str)
             if response['status'] != 200:
-                logger.error('order request {} was : {}\nresponse was: {}', order_id, request, response)
-                raise Exception('order ' + order_id + ' failed to create: ' + response)
+                if response['error']['code'] == -2010:
+                    raise Exception(response['error']['code'])
+                else:
+                    logger.error('order request {} was : {}\nresponse was: {}', order_id, request, response)
+                    raise Exception('order ' + order_id + ' failed to create: ' + response_str)
         else:
             logger.error('TEST order created: {}', request)
             random_id = randint(1000000, 9999999)
