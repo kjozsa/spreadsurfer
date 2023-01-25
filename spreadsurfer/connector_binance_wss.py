@@ -10,7 +10,7 @@ import asyncio
 import websockets
 from loguru import logger
 
-from timeutils import timestamp_now_ms
+from .timeutils import timestamp_now_ms
 
 config = json.load(open('config.json'))
 
@@ -37,22 +37,24 @@ class BinanceWebsocketConnector:
     async def send_buy_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order = await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit, recv_window=recv_window)
-            order_id, timestamp_created_ms = order['result']['orderId']
+            order, timestamp_created_ms = await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit, recv_window=recv_window)
+            order_id = order['result']['orderId']
             logger.success('#{}. {} BUY ORDER PLACED!! order_id {}, wave {} - at price {}, recv {}', order_nr, limit_str, order_id, wave_id, price if limit else '?', recv_window)
             return order_id, timestamp_created_ms
         except Exception as e:
-            logger.error('BUY order failed', e)
+            logger.error('BUY order failed: {}', e)
+            logger.exception(e)
 
     async def send_sell_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order = await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit, recv_window=recv_window)
-            order_id, timestamp_created_ms = order['result']['orderId']
+            order, timestamp_created_ms = await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit, recv_window=recv_window)
+            order_id = order['result']['orderId']
             logger.success('#{}. {} SELL ORDER PLACED!! order_id {}, wave {} - at price {}, recv {}', order_nr, limit_str, order_id, wave_id, price if limit else '?', recv_window)
             return order_id, timestamp_created_ms
         except Exception as e:
-            logger.error('SELL order failed', e)
+            logger.error('SELL order failed: {}', e)
+            logger.exception(e)
 
     async def send_order(self, order_id, price, amount, buy, limit, recv_window):
         buy_sell = 'BUY' if buy else 'SELL'
