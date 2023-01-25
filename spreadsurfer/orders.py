@@ -74,17 +74,26 @@ class OrderMaker:
         logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, spread)
         match stabilized_hint:
             case 'min':  # price is raising
-                await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True)
-                await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True, recv_window=recv_window)
+                buy_order_id = await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True)
+                sell_order_id = await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True, recv_window=recv_window)
+                near_order = {'order_id': buy_order_id, 'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount}
+                far_order = {'order_id': sell_order_id, 'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount}
             case 'max':  # price is dropping
-                await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True)
-                await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True, recv_window=recv_window)
-        self.bookkeeper.save_orders(wave_id, [{'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount}, {'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount}])
+                sell_order_id = await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True)
+                buy_order_id = await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True, recv_window=recv_window)
+                near_order = {'order_id': sell_order_id, 'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount}
+                far_order = {'order_id': buy_order_id, 'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount}
+            case _:
+                raise AssertionError(f'attempt to create order with stabilized hint {stabilized_hint}')
+
+        self.bookkeeper.save_orders(wave_id, [near_order, far_order])
 
     async def cancel_orders(self, wave_id):
-        if self.bookkeeper.remove_orders_by_wave(wave_id):
-            logger.success('cancelling all orders in wave {}', wave_id)
+        removed_orders = self.bookkeeper.remove_orders_by_wave(wave_id)
+        if removed_orders and removed_orders[0] is not None:
+            remove_order_id = removed_orders[0]['order_id']
+            logger.success('cancelling near order {} in wave {}', remove_order_id, wave_id)
             try:
-                await self.connector_wss.cancel_orders(wave_id)
-            except:
+                await self.connector_wss.cancel_order(wave_id, remove_order_id)
+            except Exception:
                 pass  # ignore errors on cancelling orders because they might got fulfilled already

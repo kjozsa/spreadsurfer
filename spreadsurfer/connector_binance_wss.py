@@ -35,16 +35,18 @@ class BinanceWebsocketConnector:
     async def send_buy_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit, recv_window=recv_window)
+            order = await self.send_order('B-' + wave_id, price, amount, buy=True, limit=limit, recv_window=recv_window)
             logger.success('#{}. {} BUY ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
+            return order['result']['orderId']
         except Exception as e:
             logger.error('BUY order failed', e)
 
     async def send_sell_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit, recv_window=recv_window)
+            order = await self.send_order('S-' + wave_id, price, amount, buy=False, limit=limit, recv_window=recv_window)
             logger.success('#{}. {} SELL ORDER PLACED!! wave {} - at price {}', order_nr, limit_str, wave_id, price if limit else '?')
+            return order['result']['orderId']
         except Exception as e:
             logger.error('SELL order failed', e)
 
@@ -78,10 +80,11 @@ class BinanceWebsocketConnector:
                 raise Exception('order ' + order_id + ' failed to create: ' + response)
         else:
             logger.error('TEST order created: {}', request)
-            response = {'id': f'test{randint(1000000, 9999999)}'}
+            random_id = randint(1000000, 9999999)
+            response = {'id': f'test{random_id}', 'result': {'orderId': random_id}}
         return response
 
-    async def cancel_orders(self, wave_id):
+    async def cancel_all_orders(self, wave_id):
         if test_mode:
             return
 
@@ -95,7 +98,26 @@ class BinanceWebsocketConnector:
             await self.websocket.send(request)
             response = json.loads(await self.websocket.recv())
             if response['status'] != 200:
-                logger.error('failed to cancel orders: {}', response)
+                logger.error('failed to cancel all orders: {}', response)
+        except Exception as e:
+            logger.error('exception while cancelling orders: {}', e)
+
+    async def cancel_order(self, wave_id, order_id):
+        if test_mode:
+            return
+
+        params = {
+            'apiKey': api_key,
+            'orderId': order_id,
+            'symbol': 'BTCUSDT',
+            'timestamp': math.floor(datetime.now().timestamp() * 1000)
+        }
+        request = self.sign(params, wave_id, 'openOrders.cancel')
+        try:
+            await self.websocket.send(request)
+            response = json.loads(await self.websocket.recv())
+            if response['status'] != 200:
+                logger.error('failed to cancel order {}: {}', order_id, response)
         except Exception as e:
             logger.error('exception while cancelling orders: {}', e)
 

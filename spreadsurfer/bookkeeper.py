@@ -29,9 +29,9 @@ class Bookkeeper:
                 except KeyError:
                     logger.debug('%%%%%% failed to remove orders by wave (KeyError) - to investigate later')
                     pass
-            return True
+            return orders
         else:
-            return False
+            return None
 
     def _remove_orders_by_price(self, order_id):
         self.active_orders_by_price.pop(order_id)
