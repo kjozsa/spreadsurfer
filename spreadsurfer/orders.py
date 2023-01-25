@@ -89,9 +89,9 @@ class OrderMaker:
         self.bookkeeper.save_orders([near_order, far_order])
 
     async def cancel_orders(self, wave_id):
-        remove_order_ids = self.bookkeeper.remove_orders_by_wave(wave_id)
-        for remove_order_id in remove_order_ids:
-            logger.success('cancelling near order {} in wave {}', remove_order_id, wave_id)
+        for order in self.bookkeeper.orders_to_cancel(wave_id):
+            remove_order_id = order['order_id']
+            logger.success('cancelling order {} in wave {}', remove_order_id, wave_id)
             try:
                 await self.connector_wss.cancel_order(wave_id, remove_order_id)
             except Exception:

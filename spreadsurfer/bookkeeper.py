@@ -1,5 +1,11 @@
 import pandas as pd
 from loguru import logger
+import json
+
+from .timeutils import timestamp_now_ms
+
+order_config = json.load(open('config.json'))['orders']
+cancel_far_order_after_ms = order_config['cancel_far_order_after_ms']
 
 
 class Bookkeeper:
@@ -46,3 +52,12 @@ class Bookkeeper:
     def report(self):
         # logger.log('bookkeeper', '{} active_orders, {} wave_orders', len(self.active_orders_by_price), len(self.wave_orders))
         logger.trace('$$$ TOTAL BALANCE: {} -- {} total orders, {} fulfilled orders ({} %)', round(self.total_balance, 3), self.nr_orders, self.nr_fulfilled_orders, round(100 * self.nr_fulfilled_orders / self.nr_orders))
+
+    def orders_to_cancel(self, wave_id):
+        orders = self.df_active[self.df_active.wave_id == wave_id].to_dict('records')
+        drop_before_time_ms = timestamp_now_ms() - cancel_far_order_after_ms
+
+        past_orders = self.df_past[self.df_past.timestamp_created_ms < drop_before_time_ms].to_dict('records')
+        self.df_past = self.df_past[self.df_past.timestamp_created_ms >= drop_before_time_ms]
+
+        return orders + past_orders
