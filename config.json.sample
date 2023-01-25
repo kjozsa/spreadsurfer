@@ -24,7 +24,8 @@
     "skip_order_on_spread_below":  0.2,
     "skip_order_on_spread_above":  10,
     "low_spread_limit": 0.5,
-    "recv_window": 500
+    "recv_window": 500,
+    "cancel_far_order_after_ms": 600
   },
   "datacollect": {
     "datacollect_disabled": false,
