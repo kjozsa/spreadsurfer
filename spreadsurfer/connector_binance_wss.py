@@ -108,7 +108,7 @@ class BinanceWebsocketConnector:
         except Exception as e:
             logger.error('exception while cancelling orders: {}', e)
 
-    async def cancel_order(self, wave_id, order_id):
+    async def cancel_order(self, order_id):
         if test_mode:
             return
 
@@ -118,7 +118,7 @@ class BinanceWebsocketConnector:
             'symbol': 'BTCUSDT',
             'timestamp': math.floor(datetime.now().timestamp() * 1000)
         }
-        request = self.sign(params, wave_id, 'openOrders.cancel')
+        request = self.sign(params, order_id, 'openOrders.cancel')
         try:
             await self.websocket.send(request)
             response = json.loads(await self.websocket.recv())

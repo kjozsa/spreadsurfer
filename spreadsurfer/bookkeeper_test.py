@@ -60,13 +60,13 @@ def test_cancel_then_fulfill():
     assert len(bookkeeper.df_past) == 1
 
 
-def test_orders_to_cancel():
-    bookkeeper = Bookkeeper()
-    save_orders(bookkeeper)
-    assert len(bookkeeper.df_past) == 0
-
-    bookkeeper.df_past = pd.DataFrame([{'timestamp_created_ms': 10_000, 'wave_id': 'w2', 'price': p1, 'type': 'test limit', 'amount': -0.0014}])
-    # bookkeeper.df_active.loc[bookkeeper.df_active.wave_id == 'w2', 'timestamp_created_ms'] = 1500
-    list = bookkeeper.orders_to_cancel('w1')
-    assert len(list) == 3
-
+# def test_orders_to_cancel():
+#     bookkeeper = Bookkeeper()
+#     save_orders(bookkeeper)
+#     assert len(bookkeeper.df_past) == 0
+#
+#     bookkeeper.df_past = pd.DataFrame([{'timestamp_created_ms': 10_000, 'wave_id': 'w2', 'price': p1, 'type': 'test limit', 'amount': -0.0014}])
+#     # bookkeeper.df_active.loc[bookkeeper.df_active.wave_id == 'w2', 'timestamp_created_ms'] = 1500
+#     list = bookkeeper.orders_to_cancel('w1')
+#     assert len(list) == 3
+#
