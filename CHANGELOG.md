@@ -25,3 +25,7 @@
 # v1.7
 - collect last N waves' prices
 
+# v1.8
+- use recv_window for far order
+- cancel only near order
+
