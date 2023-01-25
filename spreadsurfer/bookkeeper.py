@@ -51,7 +51,7 @@ class Bookkeeper:
 
     def report(self):
         # logger.log('bookkeeper', '{} active_orders, {} wave_orders', len(self.active_orders_by_price), len(self.wave_orders))
-        logger.trace('$$$ TOTAL BALANCE: {} -- {} total orders, {} fulfilled orders ({} %)', round(self.total_balance, 3), self.nr_orders, self.nr_fulfilled_orders, round(100 * self.nr_fulfilled_orders / self.nr_orders))
+        logger.info('$$$ TOTAL BALANCE: {} -- {} total orders, {} fulfilled orders ({} %)', round(self.total_balance, 3), self.nr_orders, self.nr_fulfilled_orders, round(100 * self.nr_fulfilled_orders / self.nr_orders))
 
     # def orders_to_cancel(self, wave_id):
     #     near_orders = self.df_active[(self.df_active.wave_id == wave_id) & (self.df_active.near_far == 'near')].to_dict('records')
