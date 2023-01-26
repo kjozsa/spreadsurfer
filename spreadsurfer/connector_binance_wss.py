@@ -82,7 +82,7 @@ class BinanceWebsocketConnector:
             response = json.loads(response_str)
             if response['status'] != 200:
                 if response['error']['code'] == -2010:
-                    raise Exception(response['error']['code'])
+                    raise Exception(response['error']['msg'])
                 else:
                     logger.error('order request {} was : {}\nresponse was: {}', order_id, request, response)
                     raise Exception('order ' + order_id + ' failed to create: ' + response_str)
