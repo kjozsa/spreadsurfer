@@ -103,11 +103,14 @@ class OrderMaker:
                 raise AssertionError(f'order {order_id} near_far parameters is unknown: {order["near_far"]}')
 
     async def cancel_order(self, order):
+        order_id = order['order_id']
+        wave_id = order['wave_id']
         try:
-            order_id = order['order_id']
-            logger.success('cancelling {} order {} in wave {}', order['near_far'], order_id, order['wave_id'])
+            logger.success('cancelling {} order {} in wave {}', order['near_far'], order_id, wave_id)
             await self.connector_wss.cancel_order(order_id)
         except Exception:
+            logger.error('failed to cancel order {} in wave {}, cancelling ALL orders instead', order_id, wave_id)
+            await self.cancel_orders(wave_id)
             pass  # ignore errors on cancelling orders because they might got fulfilled already
 
     @staticmethod
