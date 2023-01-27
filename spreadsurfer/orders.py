@@ -53,7 +53,7 @@ class OrderMaker:
                         logger.critical('failed to create order: {}', str(e))
 
                 case 'cancel':
-                    await self.cancel_orders(wave_id)
+                    await self.cancel_all_orders(wave_id)
                     if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
                         logger.critical('max nr of orders created already, exiting')
                         quit(1)
@@ -89,7 +89,7 @@ class OrderMaker:
 
         self.bookkeeper.save_orders([near_order, far_order])
 
-    async def cancel_orders(self, wave_id):
+    async def cancel_all_orders(self, wave_id):
         for order in self.bookkeeper.remove_orders_by_wave(wave_id):
             order_id = order['order_id']
 
@@ -110,7 +110,7 @@ class OrderMaker:
             await self.connector_wss.cancel_order(order_id)
         except Exception:
             logger.error('failed to cancel order {} in wave {}, cancelling ALL orders instead', order_id, wave_id)
-            await self.cancel_orders(wave_id)
+            await self.connector_wss.cancel_all_orders(wave_id)
             pass  # ignore errors on cancelling orders because they might got fulfilled already
 
     @staticmethod

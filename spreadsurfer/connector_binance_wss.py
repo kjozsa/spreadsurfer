@@ -84,9 +84,10 @@ class BinanceWebsocketConnector:
                 if response['error']['code'] == -1099:
                     if retry_count < 3:
                         retry_count += 1
-                        logger.warning('received error -1099, retrying for {} times', retry_count)
+                        logger.warning('received error -1099 for order creation, retrying for {} times', retry_count)
                         await self.send_order(order_id, price, amount, buy, limit, recv_window, retry_count)
                     else:
+                        logger.warning('giving up on error -1099 on order creation')
                         raise Exception(response['error']['msg'])
 
                 if response['error']['code'] == -2010:
