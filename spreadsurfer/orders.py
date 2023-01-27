@@ -50,7 +50,7 @@ class OrderMaker:
                         await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms)
                         self.nr_orders_created += 1
                     except Exception as e:
-                        logger.error('failed to create order: {}', str(e))
+                        logger.error('failed to create order: {}', repr(e))
 
                 case 'cancel':
                     await self.cancel_orders(wave_id)
