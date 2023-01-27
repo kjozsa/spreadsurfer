@@ -121,13 +121,12 @@ class BinanceWebsocketConnector:
             'timestamp': math.floor(datetime.now().timestamp() * 1000)
         }
         request = self.sign(params, order_id, 'openOrders.cancel')
-        try:
-            await self.websocket.send(request)
-            response = json.loads(await self.websocket.recv())
-            if response['status'] != 200:
-                logger.error('failed to cancel order {}: {}', order_id, response)
-        except Exception as e:
-            logger.error('exception while cancelling orders: {}', e)
+        await self.websocket.send(request)
+        response_str = await self.websocket.recv()
+        if json.loads(response_str)['status'] != 200:
+            logger.error('failed to cancel order {}: {}', order_id, response_str)
+            raise Exception(f'failed to cancel order {order_id}: ' + response_str)
+
 
     @staticmethod
     def sign(params, order_id, method):
