@@ -54,7 +54,7 @@ class BinanceWebsocketConnector:
         except Exception as e:
             logger.error('SELL order failed: {}', e)
 
-    async def send_order(self, order_id, price, amount, buy, limit, recv_window):
+    async def send_order(self, order_id, price, amount, buy, limit, recv_window, retry_count=0):
         buy_sell = 'BUY' if buy else 'SELL'
         params = {
             'apiKey': api_key,
@@ -81,6 +81,14 @@ class BinanceWebsocketConnector:
             response_str = await self.websocket.recv()
             response = json.loads(response_str)
             if response['status'] != 200:
+                if response['error']['code'] == -1099:
+                    if retry_count < 3:
+                        retry_count += 1
+                        logger.warning('received error -1099, retrying for {} times', retry_count)
+                        await self.send_order(order_id, price, amount, buy, limit, recv_window, retry_count)
+                    else:
+                        raise Exception(response['error']['msg'])
+
                 if response['error']['code'] == -2010:
                     raise Exception(response['error']['msg'])
                 else:
