@@ -82,13 +82,8 @@ class BinanceWebsocketConnector:
             response = json.loads(response_str)
             if response['status'] != 200:
                 if response['error']['code'] == -1099:
-                    if retry_count < 3:
-                        retry_count += 1
-                        logger.warning('received error -1099 for order creation, retrying for {} times', retry_count)
-                        await self.send_order(order_id, price, amount, buy, limit, recv_window, retry_count)
-                    else:
-                        logger.warning('giving up on error -1099 on order creation')
-                        raise Exception(response['error']['msg'])
+                    # order was processed after recv_window was over. Ignore this issue
+                    raise Exception('recv_window limit ' + recv_window + 'ms exceeded (too slow order)')
 
                 if response['error']['code'] == -2010:
                     raise Exception(response['error']['msg'])
@@ -135,7 +130,6 @@ class BinanceWebsocketConnector:
         if json.loads(response_str)['status'] != 200:
             logger.error('failed to cancel order {}: {}', order_id, response_str)
             raise Exception(f'failed to cancel order {order_id}: ' + response_str)
-
 
     @staticmethod
     def sign(params, order_id, method):

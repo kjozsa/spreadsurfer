@@ -50,10 +50,10 @@ class OrderMaker:
                         await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms)
                         self.nr_orders_created += 1
                     except Exception as e:
-                        logger.critical('failed to create order: {}', str(e))
+                        logger.error('failed to create order: {}', str(e))
 
                 case 'cancel':
-                    await self.cancel_all_orders(wave_id)
+                    await self.cancel_orders(wave_id)
                     if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
                         logger.critical('max nr of orders created already, exiting')
                         quit(1)
@@ -89,20 +89,20 @@ class OrderMaker:
 
         self.bookkeeper.save_orders([near_order, far_order])
 
-    async def cancel_all_orders(self, wave_id):
+    async def cancel_orders(self, wave_id):
         for order in self.bookkeeper.remove_orders_by_wave(wave_id):
             order_id = order['order_id']
 
             if order['near_far'] == 'near':
-                await self.cancel_order(order)
+                await self.cancel_single_order(order)
 
             elif order['near_far'] == 'far':
-                asyncio.create_task(self.delay(cancel_far_order_after_ms, self.cancel_order(order)))
+                asyncio.create_task(self.delay(cancel_far_order_after_ms, self.cancel_single_order(order)))
                 pass
             else:
                 raise AssertionError(f'order {order_id} near_far parameters is unknown: {order["near_far"]}')
 
-    async def cancel_order(self, order):
+    async def cancel_single_order(self, order):
         order_id = order['order_id']
         wave_id = order['wave_id']
         try:
