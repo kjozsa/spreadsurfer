@@ -30,7 +30,7 @@ class BalanceWatcher:
                 balance = await self.exchange.watch_balance()
                 self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']
                 balance_total = round(self.last_btc_usd_rate * self.balance_btc + self.balance_usd, 2)
-                logger.trace('total balance: {}  (BTC: {}, USDT: {})', balance_total, self.balance_btc, self.balance_usd)
+                logger.info('total balance: {}  (BTC: {}, USDT: {})', balance_total, self.balance_btc, self.balance_usd)
 
                 if balance_total < panic_below_total:
                     self.panic_countdown -= 1
