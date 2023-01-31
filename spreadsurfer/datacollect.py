@@ -2,6 +2,7 @@ import atexit
 import json
 import os
 
+import asyncio
 import pandas as pd
 from loguru import logger
 
@@ -72,6 +73,8 @@ class DataCollector:
             atexit.register(self.dump_data_to_file)
 
         while True:
+            await asyncio.sleep(0)
+
             (wave_stabilized, stabilized_ms, frames, end_ms, end_frame, past_waves_final_prices) = await self.datacollect_queue.get()
             self.past_waves_final_prices = past_waves_final_prices
 

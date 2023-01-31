@@ -22,6 +22,8 @@ class TradeWatcher:
         last_trade_count = 0
 
         while True:
+            await asyncio.sleep(0)
+
             trades = await self.exchange.watch_trades('BTC/USDT')
             fresh_data = []
             for trade in trades:

@@ -1,6 +1,8 @@
+import json
+
+import asyncio
 import ccxt.pro as ccxt
 from loguru import logger
-import json
 
 wave_config = json.load(open('config.json'))['balance']
 logger.info('balance config: {}', wave_config)
@@ -22,6 +24,8 @@ class BalanceWatcher:
         logger.info('starting balance: BTC: {}, USDT: {}', self.balance_btc, self.balance_usd)
 
         while True:
+            await asyncio.sleep(0)
+
             try:
                 balance = await self.exchange.watch_balance()
                 self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']

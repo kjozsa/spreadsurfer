@@ -40,6 +40,8 @@ class OrderMaker:
         await self.connector_wss.start()
 
         while True:
+            await asyncio.sleep(0)
+
             (wave_id, event_name, frames, stabilized_hint, stabilized_at_ms) = await self.orders_queue.get()
             if orders_disabled:
                 continue

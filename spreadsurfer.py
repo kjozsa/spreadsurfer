@@ -1,7 +1,10 @@
 import sys
+import threading
+import traceback
 
 from spreadsurfer import *
 import asyncio
+import signal
 from loguru import logger
 from spreadsurfer.bookkeeper import Bookkeeper
 from spreadsurfer.price_engine import PriceEngine
@@ -20,12 +23,23 @@ logger.level("bookkeeper", color='<light-green><bold>', no=37)
 logger.add("console.log", rotation="500 MB")
 
 
+def thread_dump(signum, stack):
+    stacktrace = ""
+    for _thread in threading.enumerate():
+        stacktrace += str(_thread)
+        stacktrace += "".join(traceback.format_stack(sys._current_frames()[_thread.ident]))
+        stacktrace += "\n"
+    logger.info('\n-- dump stacktrace start -- \n{}\n-- dump stacktrace end -- ', stacktrace)
+
 @logger.catch
 async def main():
+    signal.signal(signal.SIGUSR1, thread_dump)
+
     wave_events_queue = asyncio.Queue(maxsize=1)
     orders_queue = asyncio.Queue(maxsize=1)
     datacollect_queue = asyncio.Queue(maxsize=1)
     exchange = connect_exchange()
+    # exchange2 = connect_exchange()
 
     try:
         balance_watcher = BalanceWatcher(exchange)
@@ -35,6 +49,7 @@ async def main():
         coroutines = [
             TimeTracker(),
             balance_watcher,
+            OrderBookWatcher(exchange),
             TradeWatcher(exchange, wave_events_queue, bookkeeper),
             WaveHandler(wave_events_queue, orders_queue, datacollect_queue),
             OrderMaker(exchange, orders_queue, balance_watcher, bookkeeper, PriceEngine(data_collector), binance_wss_connector),
