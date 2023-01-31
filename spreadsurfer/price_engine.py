@@ -24,6 +24,12 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
         df.loc[df['wave_direction'] == 'min', 'wave_direction'] = 1
         df.loc[df['wave_direction'] == 'max'] = -1
         df = df.astype({"wave_direction": 'float64'})
+
+        for col in df.columns:
+            if 'past' in col:
+                df.drop(col, axis=1, inplace=True)
+            if '_spread' == col[1:]:
+                df.drop(col, axis=1, inplace=True)
         return df
 
 
@@ -69,4 +75,3 @@ class PriceEngine:
             raise Exception(f'predicted price anomaly, low_price: {low_price}, high price: {high_price}, skip placing order')
 
         return round(low_price, 2), round(high_price, 2)
-
