@@ -46,12 +46,13 @@ async def main():
         bookkeeper = Bookkeeper()
         data_collector = DataCollector(datacollect_queue)
         binance_wss_connector = BinanceWebsocketConnector()
+        order_book_watcher = OrderBookWatcher(exchange)
         coroutines = [
             TimeTracker(),
             balance_watcher,
-            OrderBookWatcher(exchange),
+            order_book_watcher,
             TradeWatcher(exchange, wave_events_queue, bookkeeper),
-            WaveHandler(wave_events_queue, orders_queue, datacollect_queue),
+            WaveHandler(order_book_watcher, wave_events_queue, orders_queue, datacollect_queue),
             OrderMaker(exchange, orders_queue, balance_watcher, bookkeeper, PriceEngine(data_collector), binance_wss_connector),
             data_collector
         ]

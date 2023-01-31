@@ -45,16 +45,15 @@ def calculate_gasp(order_book):
 class OrderBookWatcher:
     def __init__(self, exchange: ccxt.Exchange):
         self.exchange = exchange
+        self.last_gasp = None
 
     async def start(self):
-        df = pd.DataFrame(columns=[])
-
         while True:
             await asyncio.sleep(0)
 
             try:
                 order_book = await self.exchange.watch_order_book('BTC/USDT', limit=10)
-                gasp = calculate_gasp(order_book)
-                logger.debug('orderbook gasp: {}', gasp)
+                self.last_gasp = calculate_gasp(order_book)
+                logger.debug('orderbook gasp: {}', self.last_gasp)
             except Exception as e:
                 logger.error('error while fetching order book: {}', e)

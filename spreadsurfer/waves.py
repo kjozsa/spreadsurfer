@@ -7,6 +7,7 @@ import pandas as pd
 import shortuuid
 from loguru import logger
 
+from .orderbook import OrderBookWatcher
 from .timeutils import now, timedelta_ms
 
 config = json.load(open('config.json'))
@@ -24,7 +25,8 @@ skip_order_on_spread_above = config['orders']['skip_order_on_spread_above']
 
 
 class WaveHandler:
-    def __init__(self, wave_events_queue: asyncio.Queue, orders_queue: asyncio.Queue, datacollect_queue: asyncio.Queue):
+    def __init__(self, order_book: OrderBookWatcher, wave_events_queue: asyncio.Queue, orders_queue: asyncio.Queue, datacollect_queue: asyncio.Queue):
+        self.order_book = order_book
         self.wave_events_queue = wave_events_queue
         self.orders_queue = orders_queue
         self.datacollect_queue = datacollect_queue
@@ -41,6 +43,8 @@ class WaveHandler:
 
     async def start(self):
         while True:
+            await asyncio.sleep(0)
+
             (event_name, wave_frame) = await self.wave_events_queue.get()
             match event_name:
                 case 'start':
@@ -86,7 +90,7 @@ class WaveHandler:
         start = end - collect_last_n_frames
         frames = self.wave[start:end]
         logger.trace('$$$$$$ sending {} frames', len(frames))
-        await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, frames, wave_length_ms, wave_end_frame, self.past_waves_final_prices))
+        await self.datacollect_queue.put((self.wave_stabilized, self.wave_stabilized_at_ms, self.gasp_stabilized, frames, wave_length_ms, wave_end_frame, self.past_waves_final_prices))
 
     async def check_stabilized(self, wave_frame):
         if not self.wave_running or len(self.wave) <= wave_min_length:
@@ -115,6 +119,8 @@ class WaveHandler:
         self.wave_stabilized = min_or_max
         self.wave_stabilized_at_ms = delta_ms
         self.wave_stabilized_at_frame = len(self.wave)
+        self.gasp_stabilized = self.order_book.last_gasp
+
         logger.info('wave {} stabilized in {} ms', min_or_max.upper(), delta_ms)
         self.wave_stabilized_frame = stabilized_frame
 

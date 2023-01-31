@@ -62,7 +62,8 @@ class DataCollector:
             'stabilized_at_ms',
             'stabilized_nr_trades',
             'stabilized_spread',
-            'wave_direction'
+            'wave_direction',
+            'stabilized_gasp'
         ]
         self.past_price_columns = [f'past_final_price_{x}' for x in range(0, collect_last_n_wave_prices)]
         columns += self.past_price_columns
@@ -75,7 +76,7 @@ class DataCollector:
         while True:
             await asyncio.sleep(0)
 
-            (wave_stabilized, stabilized_ms, frames, end_ms, end_frame, past_waves_final_prices) = await self.datacollect_queue.get()
+            (wave_stabilized, stabilized_ms, gasp_stabilized, frames, end_ms, end_frame, past_waves_final_prices) = await self.datacollect_queue.get()
             self.past_waves_final_prices = past_waves_final_prices
 
             if datacollect_disabled:
@@ -85,7 +86,7 @@ class DataCollector:
                 logger.log('data', 'skip collecting wave, past_final_prices not filled up yet')
                 continue
 
-            frames_data, stabilized_data, stabilized_price = await self.collect_wave_data(frames, stabilized_ms, wave_stabilized)
+            frames_data, stabilized_data, stabilized_price = await self.collect_wave_data(frames, stabilized_ms, wave_stabilized, gasp_stabilized)
             last_price = end_frame['price_max'].max() if wave_stabilized == 'min' else end_frame['price_min'].min()
             last_price_delta = r(last_price - stabilized_price)
             last_price_obj = {'last_price_delta_since_stabilized': last_price_delta}
@@ -107,7 +108,7 @@ class DataCollector:
         return dict(zip(self.past_price_columns, corrected_past_waves_final_prices))
 
     @staticmethod
-    async def collect_wave_data(frames, stabilized_ms, wave_stabilized):
+    async def collect_wave_data(frames, stabilized_ms, wave_stabilized, gasp_stabilized):
         stabilized_frame = frames.tail(1)
         if wave_stabilized == 'min':
             raising = True
@@ -130,6 +131,7 @@ class DataCollector:
             'stabilized_amount_mean': r(stabilized_frame['amount_mean'].mean()),
             'stabilized_spread': r(stabilized_frame['spread'].max()),
             'wave_direction': wave_stabilized,
+            'stabilized_gasp': r(stabilized_price - gasp_stabilized)
         }
         return frames_data, stabilized_data, stabilized_price
 
