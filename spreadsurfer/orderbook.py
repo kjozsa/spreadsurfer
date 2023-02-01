@@ -1,7 +1,6 @@
 import asyncio
 
 import ccxt.pro as ccxt
-import pandas as pd
 from loguru import logger
 
 
@@ -51,9 +50,6 @@ class OrderBookWatcher:
         while True:
             await asyncio.sleep(0)
 
-            try:
-                order_book = await self.exchange.watch_order_book('BTC/USDT', limit=10)
-                self.last_gasp = calculate_gasp(order_book)
-                logger.debug('orderbook gasp: {}', self.last_gasp)
-            except Exception as e:
-                logger.error('error while fetching order book: {}', e)
+            order_book = await self.exchange.watch_order_book('BTC/USDT', limit=10)
+            self.last_gasp = calculate_gasp(order_book)
+            logger.debug('orderbook gasp: {}', self.last_gasp)

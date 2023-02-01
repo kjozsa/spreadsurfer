@@ -26,23 +26,20 @@ class BalanceWatcher:
         while True:
             await asyncio.sleep(0)
 
-            try:
-                balance = await self.exchange.watch_balance()
-                self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']
-                balance_total = round(self.last_btc_usd_rate * self.balance_btc + self.balance_usd, 2)
-                logger.info('total balance: {}  (BTC: {}, USDT: {})', balance_total, self.balance_btc, self.balance_usd)
+            balance = await self.exchange.watch_balance()
+            self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']
+            balance_total = round(self.last_btc_usd_rate * self.balance_btc + self.balance_usd, 2)
+            logger.info('total balance: {}  (BTC: {}, USDT: {})', balance_total, self.balance_btc, self.balance_usd)
 
-                if balance_total < panic_below_total:
-                    self.panic_countdown -= 1
-                else:
-                    self.panic_countdown = panic_countdown_from
+            if balance_total < panic_below_total:
+                self.panic_countdown -= 1
+            else:
+                self.panic_countdown = panic_countdown_from
 
-                if self.panic_countdown <= 0:
-                    logger.critical('total balance {} below panic level ({}), EXITING..', balance_total, panic_below_total)
-                    quit(1)
+            if self.panic_countdown <= 0:
+                logger.critical('total balance {} below panic level ({}), EXITING..', balance_total, panic_below_total)
+                quit(1)
 
-            except Exception as e:
-                logger.exception(e)
 
     def sum(self, btc_usd_rate):
         return (self.balance_btc * btc_usd_rate) + self.balance_usd
