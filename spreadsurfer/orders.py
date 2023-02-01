@@ -80,19 +80,25 @@ class OrderMaker:
         logger.success('creating orders in wave {}, buy {} at {}, sell {} at {}. Spread: {}', wave_id, buy_amount, low_price, sell_amount, high_price, spread)
         match stabilized_hint:
             case 'min':  # price is raising
-                buy_order_id, timestamp_created_ms = await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True, recv_window=recv_window)
-                sell_order_id, timestamp_created_ms = await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True, recv_window=recv_window)
-                near_order = {'order_id': buy_order_id, 'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount, 'timestamp_created_ms': timestamp_created_ms, 'wave_id': wave_id, 'near_far': 'near'}
-                far_order = {'order_id': sell_order_id, 'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount, 'timestamp_created_ms': timestamp_created_ms, 'wave_id': wave_id, 'near_far': 'far'}
+                buy_order_id, timestamp_created_buy_ms = await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True, recv_window=recv_window)
+                sell_order_id, timestamp_created_sell_ms = await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True, recv_window=recv_window)
+                near_order = {'order_id': buy_order_id, 'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount, 'timestamp_created_ms': timestamp_created_buy_ms, 'wave_id': wave_id, 'near_far': 'near'}
+                far_order = {'order_id': sell_order_id, 'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount, 'timestamp_created_ms': timestamp_created_sell_ms, 'wave_id': wave_id, 'near_far': 'far'}
             case 'max':  # price is dropping
-                sell_order_id, timestamp_created_ms = await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True, recv_window=recv_window)
-                buy_order_id, timestamp_created_ms = await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True, recv_window=recv_window)
-                near_order = {'order_id': sell_order_id, 'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount, 'timestamp_created_ms': timestamp_created_ms, 'wave_id': wave_id, 'near_far': 'near'}
-                far_order = {'order_id': buy_order_id, 'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount, 'timestamp_created_ms': timestamp_created_ms, 'wave_id': wave_id, 'near_far': 'far'}
+                sell_order_id, timestamp_created_sell_ms = await self.connector_wss.send_sell_order(self.nr_orders_created, wave_id, high_price, sell_amount, limit=True, recv_window=recv_window)
+                buy_order_id, timestamp_created_buy_ms = await self.connector_wss.send_buy_order(self.nr_orders_created, wave_id, low_price, buy_amount, limit=True, recv_window=recv_window)
+                near_order = {'order_id': sell_order_id, 'price': high_price, 'type': 'LIMIT SELL', 'amount': sell_amount, 'timestamp_created_ms': timestamp_created_sell_ms, 'wave_id': wave_id, 'near_far': 'near'}
+                far_order = {'order_id': buy_order_id, 'price': low_price, 'type': 'LIMIT BUY', 'amount': -1 * buy_amount, 'timestamp_created_ms': timestamp_created_buy_ms, 'wave_id': wave_id, 'near_far': 'far'}
             case _:
                 raise AssertionError(f'attempt to create order with stabilized hint {stabilized_hint}')
 
-        self.bookkeeper.save_orders([near_order, far_order])
+        save_orders = []
+        if near_order['order_id'] is not None:
+            save_orders += near_order
+        if far_order['order_id'] is not None:
+            save_orders += far_order
+
+        self.bookkeeper.save_orders(save_orders)
 
     async def cancel_orders(self, wave_id):
         for order in self.bookkeeper.remove_orders_by_wave(wave_id):
