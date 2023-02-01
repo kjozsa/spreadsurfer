@@ -29,3 +29,8 @@
 - use recv_window for far order
 - cancel only near order
 
+# v1.9
+- stream orderbook, calculate gasp
+- use gasp for prediction
+- models trained at score 161 (MAPE) and 291 (RMSE)
+
