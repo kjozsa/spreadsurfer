@@ -2,6 +2,7 @@ import json
 
 import asyncio
 import ccxt.pro as ccxt
+import shortuuid
 from loguru import logger
 
 wave_config = json.load(open('config.json'))['balance']
@@ -11,8 +12,9 @@ panic_countdown_from = wave_config['panic_countdown_from']
 
 
 class BalanceWatcher:
-    def __init__(self, exchange: ccxt.Exchange):
+    def __init__(self, exchange: ccxt.Exchange, connector_wss):
         self.exchange = exchange
+        self.connector_wss = connector_wss
         self.balance_btc = None
         self.balance_usd = None
         self.last_btc_usd_rate = None
@@ -38,8 +40,9 @@ class BalanceWatcher:
 
             if self.panic_countdown <= 0:
                 logger.critical('total balance {} below panic level ({}), EXITING..', balance_total, panic_below_total)
+                await self.connector_wss.cancel_all_orders(f'P-{shortuuid.uuid()}')
+                await asyncio.sleep(1)
                 quit(1)
-
 
     def sum(self, btc_usd_rate):
         return (self.balance_btc * btc_usd_rate) + self.balance_usd

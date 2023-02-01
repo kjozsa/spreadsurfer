@@ -96,7 +96,7 @@ class BinanceWebsocketConnector:
             response = {'id': f'test{random_id}', 'result': {'orderId': random_id}}
         return response, timestamp_now_ms
 
-    async def cancel_all_orders(self, wave_id):
+    async def cancel_all_orders(self, identifier):
         if test_mode:
             return
 
@@ -105,7 +105,7 @@ class BinanceWebsocketConnector:
             'symbol': 'BTCUSDT',
             'timestamp': math.floor(datetime.now().timestamp() * 1000)
         }
-        request = self.sign(params, wave_id, 'openOrders.cancelAll')
+        request = self.sign(params, identifier, 'openOrders.cancelAll')
         try:
             await self.websocket.send(request)
             response = json.loads(await self.websocket.recv())
@@ -132,12 +132,12 @@ class BinanceWebsocketConnector:
             raise Exception(f'failed to cancel order {order_id}: ' + response_str)
 
     @staticmethod
-    def sign(params, order_id, method):
+    def sign(params, identifier, method):
         params_list = [f'{key}={params[key]}' for key in params.keys()]
         params_str = '&'.join(params_list)
         params['signature'] = hmac.new(bytes(secret_key, 'utf-8'), msg=bytes(params_str, 'utf-8'), digestmod=hashlib.sha256).hexdigest()
         return json.dumps({
-            'id': order_id,
+            'id': identifier,
             'method': method,
             'params': params
         })

@@ -2,6 +2,7 @@ import json
 
 import asyncio
 import ccxt.pro as ccxt
+import shortuuid
 from loguru import logger
 
 from spreadsurfer import *
@@ -58,6 +59,8 @@ class OrderMaker:
                     await self.cancel_orders(wave_id)
                     if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
                         logger.critical('max nr of orders created already, exiting')
+                        await self.connector_wss.cancel_all_orders(f'P-{shortuuid.uuid()}')
+                        await asyncio.sleep(1)
                         quit(1)
 
     async def create_orders(self, wave_id, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized):

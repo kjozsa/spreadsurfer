@@ -42,10 +42,10 @@ async def main():
     # exchange2 = connect_exchange()
 
     try:
-        balance_watcher = BalanceWatcher(exchange)
         bookkeeper = Bookkeeper()
         data_collector = DataCollector(datacollect_queue)
         binance_wss_connector = BinanceWebsocketConnector()
+        balance_watcher = BalanceWatcher(exchange, binance_wss_connector)
         order_book_watcher = OrderBookWatcher(exchange)
         coroutines = [
             TimeTracker(),
