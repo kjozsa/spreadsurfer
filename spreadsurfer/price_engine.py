@@ -47,8 +47,8 @@ class PriceEngine:
             ('model', self.model)
         ])
 
-    async def predict(self, stabilized_hint, frames, stabilized_at_ms):
-        frames_data, stabilized_data, _ = await DataCollector.collect_wave_data(frames, stabilized_at_ms, stabilized_hint)
+    async def predict(self, stabilized_hint, frames, stabilized_at_ms, gasp_stabilized):
+        frames_data, stabilized_data, _ = await DataCollector.collect_wave_data(frames, stabilized_at_ms, stabilized_hint, gasp_stabilized)
         fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | self.data_collector.past_prices().items()))
         logger.log('ml', 'predict input: {}', fresh_data)
 

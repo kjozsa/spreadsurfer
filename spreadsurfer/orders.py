@@ -42,14 +42,14 @@ class OrderMaker:
         while True:
             await asyncio.sleep(0)
 
-            (wave_id, event_name, frames, stabilized_hint, stabilized_at_ms) = await self.orders_queue.get()
+            (wave_id, event_name, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized) = await self.orders_queue.get()
             if orders_disabled:
                 continue
 
             match event_name:
                 case 'create':
                     try:
-                        await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms)
+                        await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized)
                         self.nr_orders_created += 1
                     except Exception as e:
                         logger.error('failed to create order: {}', repr(e))
@@ -60,11 +60,11 @@ class OrderMaker:
                         logger.critical('max nr of orders created already, exiting')
                         quit(1)
 
-    async def create_orders(self, wave_id, frames, stabilized_hint, stabilized_at_ms):
+    async def create_orders(self, wave_id, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized):
         stabilized_frame = frames.tail(1)
         price_mean = stabilized_frame['price_mean'][0]
 
-        low_price, high_price = await self.price_engine.predict(stabilized_hint, frames, stabilized_at_ms)
+        low_price, high_price = await self.price_engine.predict(stabilized_hint, frames, stabilized_at_ms, gasp_stabilized)
 
         buy_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_usd(price_mean), 5))
         sell_amount = max(base_amount, round(base_amount + base_amount * self.balance_watcher.percentage_btc(price_mean), 5))

@@ -69,7 +69,7 @@ class WaveHandler:
 
     async def end_wave(self, end_frame):
         last_frame = self.wave.tail(1)
-        await self.orders_queue.put((self.wave_id, 'cancel', last_frame, None, None))
+        await self.orders_queue.put((self.wave_id, 'cancel', last_frame, None, None, None))
         wave_length_ms = timedelta_ms(now(), self.wave_start)
         last_price = last_frame['price_max'].max() if self.wave_stabilized == 'min' else last_frame['price_min'].min()
         logger.warning('ending wave {}, wave length was {} ms', self.wave_id, wave_length_ms)
@@ -110,7 +110,7 @@ class WaveHandler:
                 await self.stabilized('max', delta_ms, wave_frame)
 
         if (self.wave_stabilized == 'min' and not wave_min_stabilized) or (self.wave_stabilized == 'max' and not wave_max_stabilized):
-            await self.orders_queue.put((self.wave_id, 'cancel', wave_frame, None, None))
+            await self.orders_queue.put((self.wave_id, 'cancel', wave_frame, None, None, None))
             self.wave_stabilized = None
             logger.log('magenta', 'WAVE IS CHANGING, cancelling orders, attempting to restabilize..')
             await self.send_to_datacollect(wave_frame, delta_ms)
@@ -128,7 +128,7 @@ class WaveHandler:
             end = self.wave_stabilized_at_frame
             start = end - collect_last_n_frames
             frames = self.wave[start:end]
-            await self.orders_queue.put((self.wave_id, 'create', frames, min_or_max, delta_ms))
+            await self.orders_queue.put((self.wave_id, 'create', frames, min_or_max, delta_ms, self.gasp_stabilized))
 
     def shall_create_order(self, stabilized_frame, delta_ms):
         create_order = True
