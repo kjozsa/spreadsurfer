@@ -21,9 +21,6 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
 
     def transform(self, X, y=None):
         df = X.copy()
-        df.loc[df['wave_direction'] == 'min', 'wave_direction'] = 1
-        df.loc[df['wave_direction'] == 'max'] = -1
-        df = df.astype({"wave_direction": 'float64'})
 
         for col in df.columns:
             if 'past' in col:
@@ -37,23 +34,38 @@ class PriceEngine:
     def __init__(self, data_collector: DataCollector):
         self.data_collector = data_collector
 
-        cat_filename = glob('*.cat')[0]
-        self.model = CatBoostRegressor()
-        self.model.load_model(cat_filename)
-        logger.log('ml', 'catboost model loaded from {}', cat_filename)
+        cat_filenames = glob('*.cat')
+        min_filename = [x for x in cat_filenames if 'min' in x][0]
+        max_filename = [x for x in cat_filenames if 'max' in x][0]
+        self.model_min = CatBoostRegressor()
+        self.model_min.load_model(min_filename)
+        self.model_max = CatBoostRegressor()
+        self.model_max.load_model(max_filename)
+        logger.log('ml', 'catboost models loaded for min: {} and for max: {}', min_filename, max_filename)
 
-        self.pipeline = Pipeline(steps=[
+        self.pipeline_min = Pipeline(steps=[
             ('preprocessor', FeatureEngineer()),
-            ('model', self.model)
+            ('model', self.model_min)
+        ])
+        self.pipeline_max = Pipeline(steps=[
+            ('preprocessor', FeatureEngineer()),
+            ('model', self.model_max)
         ])
 
     async def predict(self, stabilized_hint, frames, stabilized_at_ms, gasp_stabilized):
         frames_data, stabilized_data, _ = await DataCollector.collect_wave_data(frames, stabilized_at_ms, stabilized_hint, gasp_stabilized)
         fresh_data = dict(sorted(frames_data.items() | stabilized_data.items() | self.data_collector.past_prices().items()))
+        wave_direction = fresh_data.pop('wave_direction')
         logger.log('ml', 'predict input: {}', fresh_data)
 
         df = pd.DataFrame([fresh_data])
-        guess = self.pipeline.predict(df)[0]
+        if wave_direction == 'min':
+            pipeline = self.pipeline_min
+        elif wave_direction == 'max':
+            pipeline = self.pipeline_max
+        else:
+            raise AssertionError('no wave_direction received for prediction!!')
+        guess = pipeline.predict(df)[0]
         logger.log('ml', 'guess: {}', guess)
 
         stabilized_frame = frames.tail(1)
