@@ -63,6 +63,9 @@ class OrderMaker:
                         await asyncio.sleep(1)
                         quit(1)
 
+                case 'cancel_instant':
+                    await self.cancel_orders(wave_id, instant=True)
+
     async def create_orders(self, wave_id, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized):
         stabilized_frame = frames.tail(1)
         price_mean = stabilized_frame['price_mean'][0]
@@ -94,22 +97,27 @@ class OrderMaker:
 
         save_orders = []
         if near_order['order_id'] is not None:
-            save_orders += near_order
+            save_orders += [near_order]
         if far_order['order_id'] is not None:
-            save_orders += far_order
+            save_orders += [far_order]
 
         self.bookkeeper.save_orders(save_orders)
 
-    async def cancel_orders(self, wave_id):
-        for order in self.bookkeeper.remove_orders_by_wave(wave_id):
+    async def cancel_orders(self, wave_id, instant=False):
+        orders_to_cancel = self.bookkeeper.remove_orders_by_wave(wave_id)
+        logger.info('cancelling {} orders in wave {}, instant: {}', len(orders_to_cancel), wave_id, instant)
+        for order in orders_to_cancel:
             order_id = order['order_id']
 
             if order['near_far'] == 'near':
                 await self.cancel_single_order(order)
 
             elif order['near_far'] == 'far':
-                asyncio.create_task(self.delay(cancel_far_order_after_ms, self.cancel_single_order(order)))
-                pass
+                if instant:
+                    await self.cancel_single_order(order)
+                else:
+                    asyncio.create_task(self.delay(cancel_far_order_after_ms, self.cancel_single_order(order)))
+
             else:
                 raise AssertionError(f'order {order_id} near_far parameters is unknown: {order["near_far"]}')
 
