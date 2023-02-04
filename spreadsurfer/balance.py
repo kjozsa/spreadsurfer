@@ -25,8 +25,9 @@ class BalanceWatcher:
 
     async def start(self):
         balance = await self.exchange.fetch_balance()
-        self.start_balance['BTC'] = float(balance['BTC']['free']) + float(balance['BTC']['locked'])
-        self.start_balance['USDT'] = float(balance['USDT']['free']) + float(balance['USDT']['locked'])
+        self.start_balance['BTC'], self.start_balance['USDT'], = [float(x['free']) + float(x['locked']) for x in balance['info']['balances'] if x['asset'] in ['BTC', 'USDT']]
+        self.balance['BTC'] = self.start_balance['BTC']
+        self.balance['USDT'] = self.start_balance['USDT']
         logger.info('starting balance: BTC: {}, USDT: {}', self.start_balance['BTC'], self.start_balance['USDT'])
 
         while True:
@@ -61,13 +62,13 @@ class BalanceWatcher:
             await asyncio.sleep(1)
             quit(1)
 
-    def sum(self, btc_usd_rate):
-        return (self.balance_btc * btc_usd_rate) + self.balance_usd
+    def total(self):
+        return (self.balance['BTC'] * self.last_btc_usd_rate) + self.balance['USDT']
 
     def percentage_btc(self, btc_usd_rate):
         self.last_btc_usd_rate = btc_usd_rate
-        return self.balance_btc * btc_usd_rate / self.sum(btc_usd_rate)
+        return self.balance['BTC'] * btc_usd_rate / self.total()
 
     def percentage_usd(self, btc_usd_rate):
         self.last_btc_usd_rate = btc_usd_rate
-        return self.balance_usd / self.sum(btc_usd_rate)
+        return self.balance['USDT'] / self.total()
