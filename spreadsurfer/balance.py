@@ -34,8 +34,8 @@ class BalanceWatcher:
             await asyncio.sleep(0)
 
             balance = await self.exchange.watch_balance()
-            self.balance['BTC'] = float(balance['BTC']['free']) + float(balance['BTC']['locked'])
-            self.balance['USDT'] = float(balance['USDT']['free']) + float(balance['USDT']['locked'])
+            self.balance['BTC'] = float(balance['BTC']['total'])
+            self.balance['USDT'] = float(balance['USDT']['total'])
             balance_total = round(self.last_btc_usd_rate * self.balance_btc + self.balance_usd, 2)
 
             p = await self.calc_profitability()
