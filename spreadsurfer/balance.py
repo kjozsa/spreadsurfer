@@ -40,7 +40,7 @@ class BalanceWatcher:
             logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', p, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
             await self.check_panic_level(balance_total)
 
-    def calc_profitability(self):
+    async def calc_profitability(self):
         # profitability == (endBTC - startBTC) * endRate + (endUSD-startUSD)   /   endBTC * endRate + endUSD
         delta_btc = self.balance['BTC'] - self.start_balance['BTC']
         delta_usdt = self.balance['USDT'] - self.start_balance['USDT']
