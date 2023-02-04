@@ -18,8 +18,6 @@ class BalanceWatcher:
         self.start_balance = {}
         self.checkpoint_balance = {}
         self.balance = {}
-        self.balance_btc = None
-        self.balance_usd = None
         self.last_btc_usd_rate = None
         self.panic_countdown = panic_countdown_from
 
@@ -36,10 +34,10 @@ class BalanceWatcher:
             balance = await self.exchange.watch_balance()
             self.balance['BTC'] = float(balance['BTC']['total'])
             self.balance['USDT'] = float(balance['USDT']['total'])
-            balance_total = round(self.last_btc_usd_rate * self.balance_btc + self.balance_usd, 2)
+            balance_total = round(self.last_btc_usd_rate * self.balance['BTC'] + self.balance['USDT'], 2)
 
             p = await self.calc_profitability()
-            logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', p, balance_total, self.balance_btc, self.balance_usd, self.last_btc_usd_rate)
+            logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', p, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
             await self.check_panic_level(balance_total)
 
     def calc_profitability(self):
