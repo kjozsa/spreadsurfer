@@ -22,16 +22,17 @@ class BalanceWatcher:
 
     async def start(self):
         balance = await self.exchange.fetch_balance()
-        self.balance_btc, self.balance_usd = [float(x['free']) for x in balance['info']['balances'] if x['asset'] in ['BTC', 'USDT']]
+        self.balance_btc, self.balance_usd = [float(x['free']) + float(x['locked']) for x in balance['info']['balances'] if x['asset'] in ['BTC', 'USDT']]
         logger.info('starting balance: BTC: {}, USDT: {}', self.balance_btc, self.balance_usd)
 
         while True:
             await asyncio.sleep(0)
 
             balance = await self.exchange.watch_balance()
-            self.balance_btc, self.balance_usd = balance['BTC']['free'], balance['USDT']['free']
+            self.balance_btc = float(balance['BTC']['free']) + float(balance['BTC']['locked'])
+            self.balance_usd = float(balance['USDT']['free']) + float(balance['USDT']['locked'])
             balance_total = round(self.last_btc_usd_rate * self.balance_btc + self.balance_usd, 2)
-            logger.info('total balance: {}  (BTC: {}, USDT: {})', balance_total, self.balance_btc, self.balance_usd)
+            logger.info('total balance: {}  (BTC: {}, USDT: {}) at rate {}', balance_total, self.balance_btc, self.balance_usd, self.last_btc_usd_rate)
 
             if balance_total < panic_below_total:
                 self.panic_countdown -= 1
