@@ -5,16 +5,14 @@ import pandas as pd
 from dateutil import parser as dateparser
 from dateutil.relativedelta import relativedelta
 from loguru import logger
-from spreadsurfer.bookkeeper import Bookkeeper
 
 import spreadsurfer
 
 
 class TradeWatcher:
-    def __init__(self, exchange: ccxt.Exchange, wave_events_queue: asyncio.Queue, bookkeeper: Bookkeeper):
+    def __init__(self, exchange: ccxt.Exchange, wave_events_queue: asyncio.Queue):
         self.exchange = exchange
         self.wave_events_queue = wave_events_queue
-        self.bookkeeper = bookkeeper
         self.wave_running = False
 
     async def start(self):
@@ -28,7 +26,6 @@ class TradeWatcher:
             fresh_data = []
             for trade in trades:
                 fresh_data.append({'ms': dateparser.parse(trade['datetime']), 'price': trade['price'], 'amount': trade['amount']})
-                self.bookkeeper.fulfill_order(trade['price'])
             df = pd.concat([df, pd.DataFrame(fresh_data)])
 
             # cut frame to latest X seconds

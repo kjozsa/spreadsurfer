@@ -14,13 +14,14 @@ from .timeutils import timestamp_now_ms
 
 config = json.load(open('config.json'))
 
+uri = config['binance']['wss_uri']
+api_key = config['binance']['api_key']
+secret_key = config['binance']['secret']
+
 # uri = "wss://testnet.binance.vision/ws-api/v3"
 # api_key = "eJANeyXf07voeeNVygX5uO8EEDryj6UkiMKSw6b5MOW8lhf6hEUWmVIeYFMvH67g"
 # secret_key = "8BMZram2Le7iBcNZjyBo7yFHkpd8hYUUWUTyljZg1cTUBIkXDRruP39gFYPkHksL"
 
-uri = 'wss://ws-api.binance.com/ws-api/v3'
-api_key = config['binance']['apiKey']
-secret_key = config['binance']['secret']
 test_mode = config['orders']['test_mode']
 
 
@@ -34,32 +35,33 @@ class BinanceWebsocketConnector:
         loop = asyncio.get_running_loop()
         loop.add_signal_handler(signal.SIGTERM, loop.create_task, self.websocket.close())
 
-    async def send_buy_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
+    async def send_buy_order(self, order_nr, client_order_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order, timestamp_created_ms = await self.send_order(f'B-{wave_id}', price, amount, buy=True, limit=limit, recv_window=recv_window)
+            order, timestamp_created_ms = await self.send_order(f'{client_order_id}', price, amount, buy=True, limit=limit, recv_window=recv_window)
             order_id = order['result']['orderId']
-            logger.success('#{}. {} BUY ORDER PLACED!! order_id {}, wave {} - at price {}, amount {}', order_nr, limit_str, order_id, wave_id, price if limit else '?', amount)
-            return order_id, timestamp_created_ms
+            logger.success('#{}. {} BUY ORDER PLACED!! order_id {}, wave {} - at price {}, amount {}', order_nr, limit_str, order_id, client_order_id, price if limit else '?', amount)
+            return client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('BUY order failed: {}', repr(e))
             return None, None
 
-    async def send_sell_order(self, order_nr, wave_id, price, amount, limit, recv_window=None):
+    async def send_sell_order(self, order_nr, client_order_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
         try:
-            order, timestamp_created_ms = await self.send_order(f'S-{wave_id}', price, amount, buy=False, limit=limit, recv_window=recv_window)
+            order, timestamp_created_ms = await self.send_order(f'{client_order_id}', price, amount, buy=False, limit=limit, recv_window=recv_window)
             order_id = order['result']['orderId']
-            logger.success('#{}. {} SELL ORDER PLACED!! order_id {}, wave {} - at price {}, amount {}', order_nr, limit_str, order_id, wave_id, price if limit else '?', amount)
-            return order_id, timestamp_created_ms
+            logger.success('#{}. {} SELL ORDER PLACED!! order_id {}, wave {} - at price {}, amount {}', order_nr, limit_str, order_id, client_order_id, price if limit else '?', amount)
+            return client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('SELL order failed: {}', repr(e))
             return None, None
 
-    async def send_order(self, order_id, price, amount, buy, limit, recv_window, retry_count=0):
+    async def send_order(self, order_id, price, amount, buy, limit, recv_window):
         buy_sell = 'BUY' if buy else 'SELL'
         params = {
             'apiKey': api_key,
+            'newClientOrderId': order_id,
             'newOrderRespType': 'ACK',
             'price': price,
             'quantity': amount,

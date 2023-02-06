@@ -7,10 +7,10 @@ from loguru import logger
 
 def connect_exchange():
     config = json.load(open('config.json'))
-    logger.debug(f'using Binance apikey {config["binance"]["apiKey"]}')
+    logger.debug(f'using Binance apikey {config["binance"]["api_key"]}')
 
     exchange = ccxt.binance({
-        'apiKey': config['binance']['apiKey'],
+        'apiKey': config['binance']['api_key'],
         'secret': config['binance']['secret'],
         'newUpdates': True,
         'enableRateLimit': True

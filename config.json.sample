@@ -1,6 +1,6 @@
 {
   "binance": {
-    "apiKey": "",
+    "api_key": "",
     "secret": ""
   },
   "balance": {

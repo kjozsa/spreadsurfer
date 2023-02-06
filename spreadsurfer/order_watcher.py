@@ -17,3 +17,7 @@ class OrderWatcher:
             orders = await self.exchange.watch_orders('BTC/USDT')
             for order in orders:
                 logger.info('$$$$ watched order: {}', order)
+                if order['info']['X'] != 'FILLED':
+                    continue
+
+                await self.bookkeeper.fulfill_order(order['info']['c'])
