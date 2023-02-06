@@ -116,7 +116,7 @@ class BinanceWebsocketConnector:
             if response['status'] != 200:
                 logger.error('failed to cancel all orders: {}', response)
         except Exception as e:
-            logger.error('exception while cancelling orders: {}', e)
+            logger.warning('exception while cancelling orders: {}', e)
 
     async def cancel_order(self, order_id):
         if test_mode:
@@ -132,7 +132,7 @@ class BinanceWebsocketConnector:
         await self.websocket.send(request)
         response_str = await self.websocket.recv()
         if json.loads(response_str)['status'] != 200:
-            logger.error('failed to cancel order {}: {}', order_id, response_str)
+            logger.warning('failed to cancel order {}: {}', order_id, response_str)
             raise Exception(f'failed to cancel order {order_id}: ' + response_str)
 
     @staticmethod
