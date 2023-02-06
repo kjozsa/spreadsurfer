@@ -50,6 +50,7 @@ async def main():
         coroutines = [
             TimeTracker(),
             balance_watcher,
+            OrderWatcher(exchange, bookkeeper),
             order_book_watcher,
             TradeWatcher(exchange, wave_events_queue, bookkeeper),
             WaveHandler(order_book_watcher, wave_events_queue, orders_queue, datacollect_queue),

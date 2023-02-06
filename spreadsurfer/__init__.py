@@ -7,3 +7,4 @@ from .connector import connect_exchange
 from .orders import OrderMaker
 from .datacollect import DataCollector
 from .orderbook import OrderBookWatcher
+from .order_watcher import OrderWatcher
