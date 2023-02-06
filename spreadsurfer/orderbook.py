@@ -44,6 +44,8 @@ def calculate_gasp(order_book):
 class OrderBookWatcher:
     def __init__(self, exchange: ccxt.Exchange):
         self.exchange = exchange
+        self.last_bid = None
+        self.last_ask = None
         self.last_gasp = None
 
     async def start(self):
@@ -53,3 +55,7 @@ class OrderBookWatcher:
             order_book = await self.exchange.watch_order_book('BTC/USDT', limit=10)
             self.last_gasp = calculate_gasp(order_book)
             logger.debug('orderbook gasp: {}', self.last_gasp)
+
+            self.last_bid = order_book['bids'][0][0]
+            self.last_ask = order_book['asks'][0][0]
+

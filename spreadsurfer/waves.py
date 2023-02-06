@@ -35,6 +35,7 @@ class WaveHandler:
         self.wave_start = None
         self.wave = pd.DataFrame(columns=['ms' 'price', 'amount'])
         self.wave_id = None
+        self.gasp_stabilized = None
         self.wave_stabilized = None
         self.wave_stabilized_at_ms = None
         self.wave_stabilized_at_frame = None

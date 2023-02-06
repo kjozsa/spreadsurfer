@@ -47,6 +47,7 @@ async def main():
         binance_wss_connector = BinanceWebsocketConnector()
         balance_watcher = BalanceWatcher(exchange, binance_wss_connector)
         order_book_watcher = OrderBookWatcher(exchange)
+        price_engine = PriceEngine(data_collector, order_book_watcher)
         coroutines = [
             TimeTracker(),
             balance_watcher,
@@ -54,7 +55,7 @@ async def main():
             order_book_watcher,
             TradeWatcher(exchange, wave_events_queue),
             WaveHandler(order_book_watcher, wave_events_queue, orders_queue, datacollect_queue),
-            OrderMaker(exchange, orders_queue, balance_watcher, bookkeeper, PriceEngine(data_collector), binance_wss_connector),
+            OrderMaker(exchange, orders_queue, balance_watcher, bookkeeper, price_engine, binance_wss_connector),
             data_collector
         ]
         tasks = [asyncio.create_task(x.start()) for x in coroutines]

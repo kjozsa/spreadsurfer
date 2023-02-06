@@ -7,6 +7,7 @@ from loguru import logger
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.pipeline import Pipeline
 
+from .orderbook import OrderBookWatcher
 from .datacollect import DataCollector
 
 pricing_config = json.load(open('config.json'))['pricing']
@@ -31,8 +32,9 @@ class FeatureEngineer(BaseEstimator, TransformerMixin):
 
 
 class PriceEngine:
-    def __init__(self, data_collector: DataCollector):
+    def __init__(self, data_collector: DataCollector, order_book_watcher: OrderBookWatcher):
         self.data_collector = data_collector
+        self.order_book_watcher = order_book_watcher
 
         cat_filenames = glob('*.cat')
         min_filename = [x for x in cat_filenames if 'min' in x][0]
@@ -69,19 +71,32 @@ class PriceEngine:
         logger.log('ml', 'guess: {}', guess)
 
         stabilized_frame = frames.tail(1)
-        price_min = stabilized_frame['price_min'][0]
-        price_max = stabilized_frame['price_max'][0]
+        price_mean = stabilized_frame['price_mean'][0]
+        price_last = stabilized_frame['price_last'][0]
+
+        bid = self.order_book_watcher.last_bid
+        ask = self.order_book_watcher.last_ask
 
         match stabilized_hint:
             case 'min':  # raising price?
-                low_price = price_max + aim_above_min
+                low_price = price_last + aim_above_min
+                if low_price < bid:
+                    logger.warning('matching low price to last bid')
+                    low_price = bid + aim_above_min
+
                 high_price = low_price + (guess * balance_guess)
 
             case 'max':  # lowering price?
-                high_price = price_min - aim_below_max
+                high_price = price_last - aim_below_max
+                if high_price > ask:
+                    logger.warning('matching high price to last ask')
+                    high_price = ask - aim_below_max
+
                 low_price = high_price + (guess * balance_guess)
             case _:
                 raise AssertionError('missing stabilized_hint')
+
+        logger.error('bid {}, low {}, high {}, ask {}', self.order_book_watcher.last_bid, low_price, high_price, self.order_book_watcher.last_ask)
 
         if low_price > high_price:
             raise Exception(f'predicted price anomaly, low_price: {low_price}, high price: {high_price}, skip placing order')

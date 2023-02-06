@@ -55,7 +55,7 @@ class TradeWatcher:
             else:
                 # mid-wave
                 logger.debug(f'{nr_trades} trades, last price: {price_last}, spread: {spread}, min: {price_min}, max: {price_max}, amount: {amount_mean}')
-                wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
+                wave_frame = pd.DataFrame([{'nr_trades': nr_trades, 'price_last': price_last, 'price_mean': price_mean, 'spread': spread, 'price_min': price_min, 'price_max': price_max, 'amount_mean': amount_mean}])
                 await self.wave_events_queue.put(("frame", wave_frame))
 
             last_trade_count = nr_trades
