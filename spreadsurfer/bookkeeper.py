@@ -11,9 +11,9 @@ class Bookkeeper:
     def __init__(self):
         cols = ['timestamp_created_ms', 'price', 'wave_id', 'order_id', 'near_far']
         self.df = pd.DataFrame(columns=cols)
-        self.total_balance = 0
         self.nr_orders = 0
         self.nr_fulfilled_orders = 0
+        self.fulfilled_orders = {x: 0 for x in ['NB', 'NS', 'FB', 'FS']}
 
     def save_orders(self, new_orders):
         self.df = pd.concat([self.df, (pd.DataFrame(new_orders))])
@@ -32,11 +32,13 @@ class Bookkeeper:
         for order in orders:
             logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order['price'])
             self.nr_fulfilled_orders += 1
-            self.total_balance += order['price'] * order['amount']
+            order_type = order['order_id'][:2]
+            self.fulfilled_orders[order_type] += 1
             self.report()
 
     def report(self):
-        logger.info('$$$ TOTAL BALANCE: {} -- {} total orders, {} fulfilled orders ({} %)', round(self.total_balance, 3), self.nr_orders, self.nr_fulfilled_orders, round(100 * self.nr_fulfilled_orders / self.nr_orders))
+        percentage = round(100 * self.nr_fulfilled_orders / self.nr_orders)
+        logger.info('$$$ {} / {} total/fulfilled orders ({} %). In detail: {}', self.nr_orders, self.nr_fulfilled_orders, percentage, self.fulfilled_orders)
 
     # def orders_to_cancel(self, wave_id):
     #     near_orders = self.df_active[(self.df_active.wave_id == wave_id) & (self.df_active.near_far == 'near')].to_dict('records')
