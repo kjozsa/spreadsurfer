@@ -105,7 +105,7 @@ class OrderMaker:
 
     async def cancel_orders(self, wave_id, instant=False):
         orders_to_cancel = self.bookkeeper.remove_orders_by_wave(wave_id)
-        logger.info('cancelling {} orders in wave {}, instant: {}', len(orders_to_cancel), wave_id, instant)
+        logger.debug('cancelling {} orders in wave {}, instant: {}', len(orders_to_cancel), wave_id, instant)
         for order in orders_to_cancel:
             order_id = order['order_id']
 
@@ -125,10 +125,10 @@ class OrderMaker:
         order_id = order['order_id']
         wave_id = order['wave_id']
         try:
-            logger.success('cancelling {} order {} in wave {}', order['near_far'], order_id, wave_id)
+            logger.debug('cancelling order {} in wave {}', order_id, wave_id)
             await self.connector_wss.cancel_order(order_id)
         except Exception:
-            logger.error('failed to cancel order {} in wave {}, cancelling ALL orders instead', order_id, wave_id)
+            logger.debug('failed to cancel order {} in wave {}, cancelling ALL orders instead', order_id, wave_id)
             await self.connector_wss.cancel_all_orders(wave_id)
             pass  # ignore errors on cancelling orders because they might got fulfilled already
 
