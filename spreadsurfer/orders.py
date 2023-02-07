@@ -134,7 +134,7 @@ class OrderMaker:
             await self.connector_wss.cancel_order(order_id)
         except Exception:
             logger.debug('failed to cancel order {} in wave {}, cancelling ALL orders instead', order_id, wave_id)
-            await self.connector_wss.cancel_all_orders(wave_id)
+            await self.connector_wss.cancel_all_orders(f'C-{wave_id}')
             pass  # ignore errors on cancelling orders because they might got fulfilled already
 
     @staticmethod

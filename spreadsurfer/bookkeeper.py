@@ -3,6 +3,8 @@ import json
 import pandas as pd
 from loguru import logger
 
+from spreadsurfer import timestamp_now_ms
+
 order_config = json.load(open('config.json'))['orders']
 cancel_far_order_after_ms = order_config['cancel_far_order_after_ms']
 
@@ -41,12 +43,8 @@ class Bookkeeper:
         percentage = round(100 * self.nr_fulfilled_orders / self.nr_orders)
         logger.info('$$$ total/fulfilled orders: {} / {} ({} %). In detail: {}', self.nr_orders, self.nr_fulfilled_orders, percentage, self.fulfilled_orders)
 
-    # def orders_to_cancel(self, wave_id):
-    #     near_orders = self.df_active[(self.df_active.wave_id == wave_id) & (self.df_active.near_far == 'near')].to_dict('records')
-    #     return near_orders + self.past_orders_to_cancel()
-    #
-    # def past_orders_to_cancel(self):
-    #     drop_before_time_ms = timestamp_now_ms() - cancel_far_order_after_ms
-    #     past_orders = self.df_past[self.df_past.timestamp_created_ms < drop_before_time_ms].to_dict('records')
-    #     self.df_past = self.df_past[self.df_past.timestamp_created_ms >= drop_before_time_ms]
-    #     return past_orders
+    def past_orders_to_cancel(self):
+        drop_before_time_ms = timestamp_now_ms() - cancel_far_order_after_ms
+        past_orders = self.df[self.df.timestamp_created_ms < drop_before_time_ms].to_dict('records')
+        self.df = self.df[self.df.timestamp_created_ms >= drop_before_time_ms]
+        return past_orders

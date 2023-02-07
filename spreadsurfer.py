@@ -49,7 +49,7 @@ async def main():
         order_book_watcher = OrderBookWatcher(exchange)
         price_engine = PriceEngine(data_collector, order_book_watcher)
         coroutines = [
-            TimeTracker(),
+            TimeTracker(bookkeeper, binance_wss_connector),
             balance_watcher,
             OrderWatcher(exchange, bookkeeper),
             order_book_watcher,
