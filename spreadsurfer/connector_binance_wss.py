@@ -40,7 +40,7 @@ class BinanceWebsocketConnector:
         try:
             order, timestamp_created_ms = await self.send_order(f'{client_order_id}', price, amount, buy=True, limit=limit, recv_window=recv_window)
             order_id = order['result']['orderId']
-            logger.success('#{}. {} BUY ORDER PLACED!! order_id {}, wave {} - at price {}, amount {}', order_nr, limit_str, order_id, client_order_id, price if limit else '?', amount)
+            logger.success('#{}. {} BUY ORDER PLACED!! order_id {} - at price {}, amount {}', order_nr, limit_str, client_order_id, price if limit else '?', amount)
             return client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('BUY order failed: {}', repr(e))
@@ -51,7 +51,7 @@ class BinanceWebsocketConnector:
         try:
             order, timestamp_created_ms = await self.send_order(f'{client_order_id}', price, amount, buy=False, limit=limit, recv_window=recv_window)
             order_id = order['result']['orderId']
-            logger.success('#{}. {} SELL ORDER PLACED!! order_id {}, wave {} - at price {}, amount {}', order_nr, limit_str, order_id, client_order_id, price if limit else '?', amount)
+            logger.success('#{}. {} SELL ORDER PLACED!! order_id {} - at price {}, amount {}', order_nr, limit_str, client_order_id, price if limit else '?', amount)
             return client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('SELL order failed: {}', repr(e))
@@ -87,13 +87,13 @@ class BinanceWebsocketConnector:
             if response['status'] != 200:
                 if response['error']['code'] == -1099:
                     # order was processed after recv_window was over. Ignore this issue
-                    raise Exception('recv_window limit ' + recv_window + 'ms exceeded (too slow order)')
+                    raise Exception(f'recv_window limit {recv_window}ms exceeded (too slow order)')
 
                 if response['error']['code'] == -2010:
                     raise Exception(response['error']['msg'])
                 else:
                     logger.error('order request {} was : {}\nresponse was: {}', order_id, request, response)
-                    raise Exception('order ' + order_id + ' failed to create: ' + response_str)
+                    raise Exception(f'order {order_id} failed to create: ' + response_str)
         else:
             logger.error('TEST order created: {}', request)
             random_id = randint(1000000, 9999999)
