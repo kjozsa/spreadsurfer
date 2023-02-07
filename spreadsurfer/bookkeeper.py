@@ -30,7 +30,7 @@ class Bookkeeper:
     async def fulfill_order(self, client_order_id):
         orders = self.df[self.df.client_order_id == client_order_id].to_dict('records')
         for order in orders:
-            logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order['client_order_id'])
+            logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {} ({})', order['type'], order['client_order_id'], order['price'])
             self.nr_fulfilled_orders += 1
             order_type = order['client_order_id'][:2]
             self.fulfilled_orders[order_type] += 1

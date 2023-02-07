@@ -41,30 +41,35 @@ class OrderMaker:
         await self.connector_wss.start()
 
         while True:
-            await asyncio.sleep(0)
+            try:
+                await asyncio.sleep(0)
 
-            (wave_id, event_name, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized) = await self.orders_queue.get()
-            if orders_disabled:
-                continue
+                (wave_id, event_name, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized) = await self.orders_queue.get()
+                if orders_disabled:
+                    continue
 
-            match event_name:
-                case 'create':
-                    try:
-                        await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized)
-                        self.nr_orders_created += 1
-                    except Exception as e:
-                        logger.error('failed to create order: {}', repr(e))
+                match event_name:
+                    case 'create':
+                        try:
+                            await self.create_orders(wave_id, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized)
+                            self.nr_orders_created += 1
+                        except Exception as e:
+                            logger.error('failed to create order: {}', repr(e))
 
-                case 'cancel':
-                    await self.cancel_orders(wave_id)
-                    if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
-                        logger.critical('max nr of orders created already, exiting')
-                        await self.connector_wss.cancel_all_orders(f'P-{shortuuid.uuid()}')
-                        await asyncio.sleep(1)
-                        quit(1)
+                    case 'cancel':
+                        await self.cancel_orders(wave_id)
+                        if max_nr_orders_limited and self.nr_orders_created >= max_nr_orders_created:
+                            logger.critical('max nr of orders created already, exiting')
+                            await self.connector_wss.cancel_all_orders(f'P-{shortuuid.uuid()}')
+                            await asyncio.sleep(1)
+                            quit(1)
 
-                case 'cancel_instant':
-                    await self.cancel_orders(wave_id, instant=True)
+                    case 'cancel_instant':
+                        await self.cancel_orders(wave_id, instant=True)
+
+            except Exception as e:
+                logger.exception(e)
+
 
     async def create_orders(self, wave_id, frames, stabilized_hint, stabilized_at_ms, gasp_stabilized):
         stabilized_frame = frames.tail(1)

@@ -12,6 +12,10 @@ class TimeTracker:
         logger.info(f'## starting at {start}')
 
         while True:
-            await asyncio.sleep(30)
-            now = datetime.now()
-            logger.info(f'## running for {relativedelta(now, start)}')
+            try:
+                await asyncio.sleep(30)
+                now = datetime.now()
+                logger.info(f'## running for {relativedelta(now, start)}')
+
+            except Exception as e:
+                logger.exception(e)

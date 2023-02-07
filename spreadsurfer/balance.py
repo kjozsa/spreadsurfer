@@ -30,16 +30,20 @@ class BalanceWatcher:
         logger.info('starting balance: BTC: {}, USDT: {}', self.start_balance['BTC'], self.start_balance['USDT'])
 
         while True:
-            await asyncio.sleep(0)
+            try:
+                await asyncio.sleep(0)
 
-            balance = await self.exchange.watch_balance()
-            self.balance['BTC'] = float(balance['BTC']['total'])
-            self.balance['USDT'] = float(balance['USDT']['total'])
-            balance_total = round(self.last_btc_usd_rate * self.balance['BTC'] + self.balance['USDT'], 2)
+                balance = await self.exchange.watch_balance()
+                self.balance['BTC'] = float(balance['BTC']['total'])
+                self.balance['USDT'] = float(balance['USDT']['total'])
+                balance_total = round(self.last_btc_usd_rate * self.balance['BTC'] + self.balance['USDT'], 2)
 
-            profitability = await self.calc_profitability()
-            logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', profitability, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
-            await self.check_panic_level(balance_total, profitability)
+                profitability = await self.calc_profitability()
+                logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', profitability, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
+                await self.check_panic_level(balance_total, profitability)
+
+            except Exception as e:
+                logger.exception(e)
 
     async def calc_profitability(self):
         # profitability == (endBTC - startBTC) * endRate + (endUSD-startUSD)   /   endBTC * endRate + endUSD

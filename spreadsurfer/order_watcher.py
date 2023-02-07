@@ -12,13 +12,17 @@ class OrderWatcher:
 
     async def start(self):
         while True:
-            await asyncio.sleep(0)
+            try:
+                await asyncio.sleep(0)
 
-            orders = await self.exchange.watch_orders('BTC/USDT')
-            for order in orders:
-                logger.trace('$$$$ watched order: {}', order)
-                # TODO "PARTIALLY_FILLED" not yet handled
-                if order['info']['X'] != 'FILLED':
-                    continue
+                orders = await self.exchange.watch_orders('BTC/USDT')
+                for order in orders:
+                    logger.trace('$$$$ watched order: {}', order)
+                    # TODO "PARTIALLY_FILLED" not yet handled
+                    if order['info']['X'] != 'FILLED':
+                        continue
 
-                await self.bookkeeper.fulfill_order(order['info']['c'])
+                    await self.bookkeeper.fulfill_order(order['info']['c'])
+
+            except Exception as e:
+                logger.exception(e)

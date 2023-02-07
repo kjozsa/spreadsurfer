@@ -44,18 +44,21 @@ class WaveHandler:
 
     async def start(self):
         while True:
-            await asyncio.sleep(0)
+            try:
+                await asyncio.sleep(0)
 
-            (event_name, wave_frame) = await self.wave_events_queue.get()
-            match event_name:
-                case 'start':
-                    self.start_wave()
-                case 'frame':
-                    await self.receive_frame(wave_frame)
-                case 'end':
-                    await self.end_wave(self.wave.tail(1))
-                case _:
-                    raise AssertionError(f'invalid event received: {event_name}')
+                (event_name, wave_frame) = await self.wave_events_queue.get()
+                match event_name:
+                    case 'start':
+                        self.start_wave()
+                    case 'frame':
+                        await self.receive_frame(wave_frame)
+                    case 'end':
+                        await self.end_wave(self.wave.tail(1))
+                    case _:
+                        raise AssertionError(f'invalid event received: {event_name}')
+            except Exception as e:
+                logger.exception(e)
 
     def start_wave(self):
         self.wave_start = now()
