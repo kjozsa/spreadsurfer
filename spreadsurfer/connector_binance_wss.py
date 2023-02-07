@@ -132,7 +132,7 @@ class BinanceWebsocketConnector:
         await self.websocket.send(request)
         response_str = await self.websocket.recv()
         if json.loads(response_str)['status'] != 200:
-            logger.debug('failed to cancel order {}: {}', order_id, response_str)
+            logger.debug('failed to cancel order {}: {}, request was: {}', order_id, response_str, request)
             raise Exception(f'failed to cancel order {order_id}: ' + response_str)
 
     @staticmethod

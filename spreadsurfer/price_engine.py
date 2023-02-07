@@ -97,7 +97,7 @@ class PriceEngine:
             case _:
                 raise AssertionError('missing stabilized_hint')
 
-        logger.error('bid {}, low {}, high {}, ask {}', self.order_book_watcher.last_bid, low_price, high_price, self.order_book_watcher.last_ask)
+        logger.error('wave {} - bid {}, low {}, high {}, ask {}', wave_direction, self.order_book_watcher.last_bid, low_price, high_price, self.order_book_watcher.last_ask)
 
         if low_price > high_price:
             raise Exception(f'predicted price anomaly, low_price: {low_price}, high price: {high_price}, skip placing order')
