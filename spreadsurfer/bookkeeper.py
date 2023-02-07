@@ -9,7 +9,7 @@ cancel_far_order_after_ms = order_config['cancel_far_order_after_ms']
 
 class Bookkeeper:
     def __init__(self):
-        cols = ['timestamp_created_ms', 'price', 'wave_id', 'order_id', 'near_far']
+        cols = ['timestamp_created_ms', 'price', 'wave_id', 'order_id', 'client_order_id', 'near_far']
         self.df = pd.DataFrame(columns=cols)
         self.nr_orders = 0
         self.nr_fulfilled_orders = 0
@@ -30,7 +30,7 @@ class Bookkeeper:
     async def fulfill_order(self, order_id):
         orders = self.df[self.df.order_id == order_id].to_dict('records')
         for order in orders:
-            logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order['order_id'])
+            logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order['client_order_id'])
             self.nr_fulfilled_orders += 1
             order_type = order['order_id'][:2]
             self.fulfilled_orders[order_type] += 1

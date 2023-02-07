@@ -41,7 +41,7 @@ class BinanceWebsocketConnector:
             order, timestamp_created_ms = await self.send_order(f'{client_order_id}', price, amount, buy=True, limit=limit, recv_window=recv_window)
             order_id = order['result']['orderId']
             logger.success('#{}. {} BUY ORDER PLACED!! order_id {} - at price {}, amount {}', order_nr, limit_str, client_order_id, price if limit else '?', amount)
-            return client_order_id, timestamp_created_ms
+            return order_id, client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('BUY order failed: {}', repr(e))
             return None, None
@@ -52,7 +52,7 @@ class BinanceWebsocketConnector:
             order, timestamp_created_ms = await self.send_order(f'{client_order_id}', price, amount, buy=False, limit=limit, recv_window=recv_window)
             order_id = order['result']['orderId']
             logger.success('#{}. {} SELL ORDER PLACED!! order_id {} - at price {}, amount {}', order_nr, limit_str, client_order_id, price if limit else '?', amount)
-            return client_order_id, timestamp_created_ms
+            return order_id, client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('SELL order failed: {}', repr(e))
             return None, None
