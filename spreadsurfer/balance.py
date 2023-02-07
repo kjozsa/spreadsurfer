@@ -9,6 +9,7 @@ wave_config = json.load(open('config.json'))['balance']
 logger.info('balance config: {}', wave_config)
 panic_below_total = wave_config['panic_below_total']
 panic_countdown_from = wave_config['panic_countdown_from']
+panic_below_profitability = wave_config['panic_below_profitability']
 
 
 class BalanceWatcher:
@@ -36,9 +37,9 @@ class BalanceWatcher:
             self.balance['USDT'] = float(balance['USDT']['total'])
             balance_total = round(self.last_btc_usd_rate * self.balance['BTC'] + self.balance['USDT'], 2)
 
-            p = await self.calc_profitability()
-            logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', p, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
-            await self.check_panic_level(balance_total)
+            profitability = await self.calc_profitability()
+            logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', profitability, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
+            await self.check_panic_level(balance_total, profitability)
 
     async def calc_profitability(self):
         # profitability == (endBTC - startBTC) * endRate + (endUSD-startUSD)   /   endBTC * endRate + endUSD
@@ -49,13 +50,14 @@ class BalanceWatcher:
         d = self.balance['BTC'] * self.last_btc_usd_rate + self.balance['USDT']
         return n / d
 
-    async def check_panic_level(self, balance_total):
+    async def check_panic_level(self, balance_total, profitability):
         if balance_total < panic_below_total:
             self.panic_countdown -= 1
         else:
             self.panic_countdown = panic_countdown_from
-        if self.panic_countdown <= 0:
-            logger.critical('total balance {} below panic level ({}), EXITING..', balance_total, panic_below_total)
+
+        if profitability < panic_below_profitability or self.panic_countdown <= 0:
+            logger.critical('profitability {} or total balance {} below panic level, EXITING..', profitability, balance_total)
             await self.connector_wss.cancel_all_orders(f'P-{shortuuid.uuid()}')
             await asyncio.sleep(1)
             quit(1)
