@@ -32,7 +32,7 @@ class Bookkeeper:
         for order in orders:
             logger.log('bookkeeper', '$$$ FULFILLED {} ORDER {}', order['type'], order['client_order_id'])
             self.nr_fulfilled_orders += 1
-            order_type = order['order_id'][:2]
+            order_type = order['client_order_id'][:2]
             self.fulfilled_orders[order_type] += 1
             self.report()
 
