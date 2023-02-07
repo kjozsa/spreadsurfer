@@ -16,7 +16,7 @@ class OrderWatcher:
 
             orders = await self.exchange.watch_orders('BTC/USDT')
             for order in orders:
-                logger.debug('$$$$ watched order: {}', order)
+                logger.trace('$$$$ watched order: {}', order)
                 # TODO "PARTIALLY_FILLED" not yet handled
                 if order['info']['X'] != 'FILLED':
                     continue
