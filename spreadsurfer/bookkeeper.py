@@ -29,7 +29,7 @@ class Bookkeeper:
         else:
             return []
 
-    async def fulfill_order(self, client_order_id):
+    def fulfill_order(self, client_order_id):
         orders = self.df[self.df.client_order_id == client_order_id].to_dict('records')
         self.df = self.df[self.df.client_order_id != client_order_id]
         for order in orders:

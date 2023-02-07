@@ -22,7 +22,7 @@ class OrderWatcher:
                     if order['info']['X'] != 'FILLED':
                         continue
 
-                    await self.bookkeeper.fulfill_order(order['info']['c'])
+                    self.bookkeeper.fulfill_order(order['info']['c'])
 
             except Exception as e:
                 logger.exception(e)
