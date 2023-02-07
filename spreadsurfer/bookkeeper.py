@@ -13,7 +13,7 @@ class Bookkeeper:
         self.df = pd.DataFrame(columns=cols)
         self.nr_orders = 0
         self.nr_fulfilled_orders = 0
-        self.fulfilled_orders = {x: 0 for x in ['NB', 'NS', 'FB', 'FS']}
+        self.fulfilled_orders = {x: 0 for x in ['NB', 'FS', 'NS', 'FB']}
 
     def save_orders(self, new_orders):
         self.df = pd.concat([self.df, (pd.DataFrame(new_orders))])
