@@ -12,7 +12,7 @@ from .datacollect import DataCollector
 
 pricing_config = json.load(open('config.json'))['pricing']
 aim_above_min = pricing_config['aim_above_min']
-aim_below_max = aim_above_min
+aim_below_max = pricing_config['aim_below_max']
 balance_guess = pricing_config['balance_guess']
 
 

@@ -44,7 +44,7 @@ class BinanceWebsocketConnector:
             return order_id, client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('BUY order failed: {}', repr(e))
-            return None, None
+            return None, None, None
 
     async def send_sell_order(self, order_nr, client_order_id, price, amount, limit, recv_window=None):
         limit_str = 'LIMIT' if limit else 'MARKET'
@@ -55,7 +55,7 @@ class BinanceWebsocketConnector:
             return order_id, client_order_id, timestamp_created_ms
         except Exception as e:
             logger.error('SELL order failed: {}', repr(e))
-            return None, None
+            return None, None, None
 
     async def send_order(self, order_id, price, amount, buy, limit, recv_window):
         buy_sell = 'BUY' if buy else 'SELL'
