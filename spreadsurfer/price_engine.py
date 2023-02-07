@@ -13,7 +13,8 @@ from .datacollect import DataCollector
 pricing_config = json.load(open('config.json'))['pricing']
 aim_above_min = pricing_config['aim_above_min']
 aim_below_max = pricing_config['aim_below_max']
-balance_guess = pricing_config['balance_guess']
+balance_guess_min = pricing_config['balance_guess_min']
+balance_guess_max = pricing_config['balance_guess_max']
 
 
 class FeatureEngineer(BaseEstimator, TransformerMixin):
@@ -84,7 +85,7 @@ class PriceEngine:
                     logger.warning('matching low price to last bid')
                     low_price = bid + aim_above_min
 
-                high_price = low_price + (guess * balance_guess)
+                high_price = low_price + (guess * balance_guess_min)
 
             case 'max':  # lowering price?
                 high_price = price_last - aim_below_max
@@ -92,7 +93,7 @@ class PriceEngine:
                     logger.warning('matching high price to last ask')
                     high_price = ask - aim_below_max
 
-                low_price = high_price + (guess * balance_guess)
+                low_price = high_price + (guess * balance_guess_max)
             case _:
                 raise AssertionError('missing stabilized_hint')
 
