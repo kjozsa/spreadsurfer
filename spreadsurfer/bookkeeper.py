@@ -3,7 +3,7 @@ import json
 import pandas as pd
 from loguru import logger
 
-from spreadsurfer import timestamp_now_ms
+from spreadsurfer.timeutils import timestamp_now_ms
 
 order_config = json.load(open('config.json'))['orders']
 cancel_far_order_after_ms = order_config['cancel_far_order_after_ms']
