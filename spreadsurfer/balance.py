@@ -39,7 +39,8 @@ class BalanceWatcher:
                 balance_total = round(self.last_btc_usd_rate * self.balance['BTC'] + self.balance['USDT'], 2)
 
                 profitability = await self.calc_profitability()
-                logger.info('PROFITABILITY {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', profitability, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
+                p_per_rate = round(profitability / self.last_btc_usd_rate * 1e6, 5)
+                logger.info('P_PER_RATE_e6 {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', p_per_rate, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
                 await self.check_panic_level(balance_total, profitability)
 
             except Exception as e:
