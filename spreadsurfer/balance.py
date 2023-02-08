@@ -41,7 +41,7 @@ class BalanceWatcher:
                 profitability = await self.calc_profitability()
                 p_per_rate = round(profitability / self.last_btc_usd_rate * 1e6, 5)
                 logger.info('P_PER_RATE_e6 {} - total balance: {}  (BTC: {}, USDT: {}) at rate {}', p_per_rate, balance_total, self.balance['BTC'], self.balance['USDT'], self.last_btc_usd_rate)
-                await self.check_panic_level(balance_total, profitability)
+                await self.check_panic_level(balance_total, p_per_rate)
 
             except Exception as e:
                 logger.exception(e)
@@ -55,14 +55,14 @@ class BalanceWatcher:
         d = self.balance['BTC'] * self.last_btc_usd_rate + self.balance['USDT']
         return n / d
 
-    async def check_panic_level(self, balance_total, profitability):
+    async def check_panic_level(self, balance_total, p_per_rate):
         if balance_total < panic_below_total:
             self.panic_countdown -= 1
         else:
             self.panic_countdown = panic_countdown_from
 
-        if profitability < panic_below_profitability or self.panic_countdown <= 0:
-            logger.critical('profitability {} or total balance {} below panic level, EXITING..', profitability, balance_total)
+        if p_per_rate < panic_below_profitability or self.panic_countdown <= 0:
+            logger.critical('p_per_rate {} or total balance {} below panic level, EXITING..', p_per_rate, balance_total)
             await self.connector_wss.cancel_all_orders(f'P-{shortuuid.uuid()}')
             await asyncio.sleep(1)
             quit(1)
