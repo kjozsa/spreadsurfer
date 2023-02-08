@@ -10,7 +10,7 @@ from spreadsurfer.bookkeeper import Bookkeeper
 from spreadsurfer.price_engine import PriceEngine
 from spreadsurfer.connector_binance_wss import BinanceWebsocketConnector
 
-sys.tracebacklimit = 3
+# sys.tracebacklimit = 3
 
 logger.remove()
 # logger.add(sys.stdout, level=35)

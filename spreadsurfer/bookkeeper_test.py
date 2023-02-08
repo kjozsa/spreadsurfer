@@ -46,6 +46,10 @@ def test_fulfill_order():
 
 def test_sweep_past_orders():
     bookkeeper = Bookkeeper()
+
+    c = bookkeeper.past_orders_to_cancel()
+    assert len(c) == 0
+
     save_orders(bookkeeper)
     assert len(bookkeeper.df) == 2
     c = bookkeeper.past_orders_to_cancel()
