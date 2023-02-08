@@ -58,6 +58,7 @@ class BinanceWebsocketConnector:
             return None, None, None
 
     async def send_order(self, order_id, price, amount, buy, limit, recv_window):
+        now = timestamp_now_ms()
         buy_sell = 'BUY' if buy else 'SELL'
         params = {
             'apiKey': api_key,
@@ -69,7 +70,7 @@ class BinanceWebsocketConnector:
             'side': buy_sell,
             'symbol': 'BTCUSDT',
             'timeInForce': 'GTC',
-            'timestamp': timestamp_now_ms(),
+            'timestamp': now,
             'type': 'LIMIT' if limit else 'MARKET'
         }
         if not limit:  # market order has no price or timeInForce field
@@ -98,7 +99,7 @@ class BinanceWebsocketConnector:
             logger.error('TEST order created: {}', request)
             random_id = randint(1000000, 9999999)
             response = {'id': f'test{random_id}', 'result': {'orderId': random_id}}
-        return response, timestamp_now_ms
+        return response, now
 
     async def cancel_all_orders(self, identifier):
         if test_mode:
