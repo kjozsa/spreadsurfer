@@ -78,7 +78,7 @@ class WaveHandler:
         if last_frame.empty:
             return
         last_price = last_frame['price_max'].max() if self.wave_stabilized == 'min' else last_frame['price_min'].min()
-        logger.warning('ending wave {}, wave length was {} ms', self.wave_id, wave_length_ms)
+        logger.warning('ending wave {}, wave length was {} ms. Last price: {}  ({})', self.wave_id, wave_length_ms, last_price, last_frame['price_last'])
 
         if self.wave_stabilized:
             await self.send_to_datacollect(end_frame, wave_length_ms)
